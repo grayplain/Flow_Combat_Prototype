@@ -14,7 +14,7 @@
 </header>
 
 <div class="main">
-  <div class="left-col">
+  <div class="flow-col">
     <div class="btn-row">
       <button class="btn btn-primary" id="btnStartBattle" onclick="startBattle()" disabled>▶ 戦闘開始</button>
       <button class="btn btn-secondary" id="btnPause" onclick="togglePause()" disabled>⏸ 一時停止</button>
@@ -29,11 +29,6 @@
       <span class="phase-step" id="ph-battle">戦闘</span>
     </div>
 
-    <div class="panel" id="rosterPanel">
-      <div class="panel-title">ユニット選択（最大10体）</div>
-      <div class="unit-roster" id="rosterGrid"></div>
-    </div>
-
     <div class="panel">
       <div class="panel-title">軍団フロー　<span id="armyCount" style="color:var(--text-dim);font-family:Crimson Text;font-size:0.8rem;text-transform:none;letter-spacing:0">0 / 10 体</span></div>
       <div class="army-slots" id="armySlots"></div>
@@ -42,6 +37,13 @@
         <div class="supply-pips" id="supplyPips"></div>
         <span id="supplyNum" style="font-size:0.8rem; color:var(--green-light);">0</span>
       </div>
+    </div>
+  </div>
+
+  <div class="left-col">
+    <div class="panel" id="rosterPanel">
+      <div class="panel-title">ユニット選択（最大10体）</div>
+      <div class="unit-roster" id="rosterGrid"></div>
     </div>
 
     <div class="restriction-panel">

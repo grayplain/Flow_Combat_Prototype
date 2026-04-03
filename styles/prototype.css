@@ -64,13 +64,14 @@ header p {
 
 .main {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1500px;
   padding: 20px 16px;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 240px 280px 1fr;
   gap: 16px;
 }
 
+.flow-col,
 .left-col,
 .right-col {
   display: flex;
@@ -671,9 +672,23 @@ header p {
   gap: 8px;
 }
 
+@media (max-width: 1200px) {
+  .main {
+    grid-template-columns: 240px 1fr;
+  }
+
+  .left-col {
+    display: none;
+  }
+}
+
 @media (max-width: 960px) {
   .main {
     grid-template-columns: 1fr;
+  }
+
+  .left-col {
+    display: flex;
   }
 
   .resource-bar {

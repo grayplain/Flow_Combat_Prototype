@@ -686,6 +686,10 @@ async function applyEnemyAttack() {
   function selectTarget(enemy) {
     const alive = myUnitsHp.filter(mu => !mu.dead);
     if (alive.length === 0) return null;
+    if (battleState.tauntUnitIdx !== undefined && battleState.tauntUnitIdx !== null) {
+      const taunt = myUnitsHp[battleState.tauntUnitIdx];
+      if (taunt && !taunt.dead) return taunt;
+    }
     const banner = alive.find(mu => mu.id === 'banner');
     if (banner) return banner;
     if (enemy.unitType === 'cavalry') {
@@ -817,6 +821,7 @@ async function applyEnemyAttack() {
     }
   }
 
+  battleState.tauntUnitIdx = null;
   addLog(`　敵攻撃フェーズ完了（合計${totalDealt}ダメージ、残シールド：${battleState.shield}）`, 'end');
   renderMyUnits();
   renderEnemies();

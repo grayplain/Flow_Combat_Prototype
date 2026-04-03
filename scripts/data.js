@@ -44,7 +44,7 @@ const UNITS = [
   {
     id: 'heavy', name: '重装歩兵', cost: 2, supplyCost: 1, maxHp: 40, theme: 'ctrl', tag: 'tag-atk', tagLabel: '破砕',
     core: 'アーマー破砕：即時7ダメ＋敵前衛アーマー-1（永続）',
-    option: '持越し：蓄積値を次ループへ持越し',
+    option: '盾壁：DEF+4・次の敵ターン攻撃を自身に集中',
     execute: (state, _i, _a, enemies) => {
       const frontTargets = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
       const allTargets = frontTargets.length > 0 ? frontTargets : enemies.filter(e => !e.dead && !e.fled);
@@ -61,11 +61,10 @@ const UNITS = [
       const dmgMsg = armorVal > 0 ? `アーマー${armorVal}軽減で実${actualDmg}ダメ` : '即時7ダメ（アーマーなし）';
       return { type: 'instant', msg: `重装歩兵【アーマー破砕】：${target.name}に${dmgMsg}＋アーマー破砕${armorMsg}${deadMsg}` };
     },
-    executeOption: (state) => {
-      state.carryOver = { atk: state.atk, def: state.def };
-      state.atk = 0;
-      state.def = 0;
-      return { type: 'ctrl', msg: `重装歩兵［持越し］：ATK${state.carryOver.atk}・DEF${state.carryOver.def} を次ループへ持越し（現在リセット）` };
+    executeOption: (state, i) => {
+      state.def += 4;
+      state.tauntUnitIdx = i;
+      return { type: 'def', msg: `重装歩兵［盾壁］：DEF+4　→ 累計DEF ${state.def}　※次の敵ターンは自身が攻撃対象` };
     }
   },
   {
