@@ -65,6 +65,7 @@ function startBattle() {
     lastType: null,
     nextBonus: 0,
     intimidate: 0,
+    archerAtkDebuff: 0,
     carryOver: null,
     scoutInfo: null,
     pendingMoraleDamage: 0,
@@ -683,6 +684,14 @@ async function applyEnemyAttack() {
     battleState.intimidate = 0;
   }
 
+  if (battleState.archerAtkDebuff > 0) {
+    enemies.filter(e => !e.dead && !e.fled && (e.unitType === 'archer' || e.unitType === 'crossbow')).forEach(e => {
+      e.atk = Math.max(0, e.atk - battleState.archerAtkDebuff);
+    });
+    addLog(`　🏇 射撃牽制効果：敵弓兵・弩兵ATK -${battleState.archerAtkDebuff}`, 'def');
+    battleState.archerAtkDebuff = 0;
+  }
+
   function selectTarget(enemy) {
     const alive = myUnitsHp.filter(mu => !mu.dead);
     if (alive.length === 0) return null;
@@ -720,8 +729,7 @@ async function applyEnemyAttack() {
   const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer');
   if (aliveEnemyArchers.length > 0) {
     const archerCount = aliveEnemyArchers.length;
-    const dmgPerUnit = 6;
-    const totalArcherDmg = archerCount * dmgPerUnit;
+    const totalArcherDmg = aliveEnemyArchers.reduce((sum, e) => sum + e.atk, 0);
     const targetPos = Math.random() < 0.5 ? 'front' : 'rear';
     const targetPosLabel = targetPos === 'front' ? '前衛' : '後衛';
     const posTargets = myUnitsHp.filter((mu, idx) => !mu.dead && army[idx] && (army[idx].position || 'front') === targetPos);

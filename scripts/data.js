@@ -69,19 +69,26 @@ const UNITS = [
   },
   {
     id: 'cavalry', name: '騎馬兵', cost: 2, supplyCost: 1, maxHp: 28, theme: 'amp', tag: 'tag-amp', tagLabel: '突撃',
-    core: 'ATK+6・士気-3を出力（突撃）',
-    option: '跳躍：ATK+6、次ノードをスキップ',
-    execute: (state) => {
-      state.atk += 6;
-      const moraleDmg = 3;
-      state.pendingMoraleDamage = (state.pendingMoraleDamage || 0) + moraleDmg;
-      return { type: 'amp', msg: `騎馬兵（突撃）：ATK +6　＋ 士気攻撃 -${moraleDmg} を予約　累計ATK ${state.atk}` };
+    core: 'ATK+6・最後尾ユニットへ追加ダメージ（後方撹乱）',
+    option: '射撃牽制：ATK+4、敵弓兵／弩兵の次ターンATK-3',
+    execute: (state, _i, _a, enemies) => {
+      const aliveEnemies = enemies.filter(e => !e.dead && !e.fled);
+      if (aliveEnemies.length === 0) return { type: 'atk', msg: '騎馬兵（後方撹乱）：敵なし（スキップ）' };
+      const target = aliveEnemies[aliveEnemies.length - 1];
+      const dmg = 6;
+      const armorVal = target.armor || 0;
+      const actualDmg = Math.max(0, dmg - armorVal);
+      target.hp = Math.max(0, target.hp - actualDmg);
+      if (target.hp <= 0) target.dead = true;
+      const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+      const armorMsg = armorVal > 0 ? `（アーマー${armorVal}で軽減）` : '';
+      state.lastInstant = actualDmg;
+      return { type: 'atk', msg: `騎馬兵（後方撹乱）：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}` };
     },
-    executeOption: (state, idx, army) => {
-      state.atk += 6;
-      const nextIdx = idx + 1;
-      const destLabel = nextIdx < army.length ? `#${nextIdx + 2}` : 'END';
-      return { type: 'amp', msg: `騎馬兵［跳躍］：ATK +6、次ノードをスキップ → ${destLabel}へ`, jumpTo: nextIdx + 1 < army.length ? nextIdx + 1 : null };
+    executeOption: (state) => {
+      state.atk += 4;
+      state.archerAtkDebuff = (state.archerAtkDebuff || 0) + 3;
+      return { type: 'amp', msg: `騎馬兵（射撃牽制）：ATK +4　＋ 敵弓兵・弩兵の次ターンATK -3 を予約　累計ATK ${state.atk}` };
     }
   },
   {
