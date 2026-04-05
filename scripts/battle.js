@@ -345,7 +345,7 @@ async function runTurn() {
 
       for (const enemy of enemies.filter(e => !e.dead && !e.fled)) {
         const counter = COUNTER_CONFIG[enemy.unitType];
-        if (counter && u.id === counter.triggerUnitId) {
+        if (counter && u.id === counter.triggerUnitId && result.targetEnemy === enemy) {
           if (enemy.unitType === 'archer') {
             if (battleState.archerCounterCount >= battleState.archerMaxCount) {
               addLog(`　🏹 ${enemy.name}【${counter.label}】矢切れ（${battleState.archerMaxCount}回上限に達した）`, 'sys');

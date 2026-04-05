@@ -33,7 +33,7 @@ const UNITS = [
       const armorMsg = armorVal > 0 ? `（アーマー${armorVal}で軽減）` : '';
       const bonusMsg = bonus > 0 ? `【槍衾×${frontSpearCount}(先頭) +${bonus}】` : '';
       state.lastInstant = actualDmg;
-      return { type: 'atk', msg: `槍兵【突撃】${bonusMsg}：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}` };
+      return { type: 'atk', msg: `槍兵【突撃】${bonusMsg}：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
     },
     executeOption: (state) => {
       state.def += 5;
@@ -59,7 +59,7 @@ const UNITS = [
       const armorMsg = armorBefore > 0 ? `（アーマー${armorBefore}→${target.armor}）` : '（アーマーなし）';
       const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
       const dmgMsg = armorVal > 0 ? `アーマー${armorVal}軽減で実${actualDmg}ダメ` : '即時7ダメ（アーマーなし）';
-      return { type: 'instant', msg: `重装歩兵【アーマー破砕】：${target.name}に${dmgMsg}＋アーマー破砕${armorMsg}${deadMsg}` };
+      return { type: 'instant', msg: `重装歩兵【アーマー破砕】：${target.name}に${dmgMsg}＋アーマー破砕${armorMsg}${deadMsg}`, targetEnemy: target };
     },
     executeOption: (state, i) => {
       state.def += 4;
@@ -83,7 +83,7 @@ const UNITS = [
       const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
       const armorMsg = armorVal > 0 ? `（アーマー${armorVal}で軽減）` : '';
       state.lastInstant = actualDmg;
-      return { type: 'atk', msg: `騎馬兵（後方撹乱）：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}` };
+      return { type: 'atk', msg: `騎馬兵（後方撹乱）：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
     },
     executeOption: (state) => {
       state.atk += 4;
