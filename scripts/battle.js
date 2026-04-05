@@ -481,16 +481,9 @@ async function runTurn() {
     const loopAtkRear = battleState.atkRear;
     const loopDef = battleState.def;
     const loopMorale = battleState.pendingMoraleDamage;
-    addLog(`── END：ATK${loopAtk} DEF+${loopDef}${loopMorale > 0 ? ` 士気攻撃-${loopMorale}` : ''} ──`, 'end');
+    addLog(`── END：蓄積ATK${loopAtk} DEF+${loopDef}${loopMorale > 0 ? ` 蓄積士気-${loopMorale}` : ''} ──`, 'end');
 
-    if (loopAtk > 0 || loopAtkRear > 0) {
-      await applyPlayerDamage(loopAtk, loopAtkRear);
-    }
-
-    if (battleState.pendingMoraleDamage > 0) {
-      await applyMoraleDamage(battleState.pendingMoraleDamage);
-      battleState.pendingMoraleDamage = 0;
-    }
+    // ATK・士気ダメージはターンENDで解放するためここでは適用しない
 
     if (loopDef > 0) {
       battleState.shield += loopDef;
@@ -506,6 +499,21 @@ async function runTurn() {
     if (battleState.supply <= 0) {
       addLog('補給0 → 自軍攻撃フェーズ終了', 'sys');
       await sleep(getSpeed() * 0.3);
+      if (battleState.carryOver) {
+        battleState.atk += battleState.carryOver.atk;
+        addLog(`　↩ 重装歩兵の持越し適用（ターンEND）`, 'amp');
+        battleState.carryOver = null;
+      }
+      const turnAtk = battleState.atk;
+      const turnAtkRear = battleState.atkRear;
+      addLog(`　⚔ ターンEND：蓄積ATK ${turnAtk} を解放`, 'atk');
+      if (turnAtk > 0 || turnAtkRear > 0) {
+        await applyPlayerDamage(turnAtk, turnAtkRear);
+      }
+      if (battleState.pendingMoraleDamage > 0) {
+        await applyMoraleDamage(battleState.pendingMoraleDamage);
+        battleState.pendingMoraleDamage = 0;
+      }
       setPhaseLabel('敵攻撃', '#e74c3c');
       addLog(`━━ ループ ${loopCount}：敵攻撃 ━━`, 'sys');
       await applyEnemyAttack();
@@ -520,6 +528,21 @@ async function runTurn() {
     if (loopCount >= MAX_LOOPS) {
       addLog(`${MAX_LOOPS}ループ到達 → 自軍攻撃フェーズ終了`, 'sys');
       await sleep(getSpeed() * 0.3);
+      if (battleState.carryOver) {
+        battleState.atk += battleState.carryOver.atk;
+        addLog(`　↩ 重装歩兵の持越し適用（ターンEND）`, 'amp');
+        battleState.carryOver = null;
+      }
+      const turnAtk = battleState.atk;
+      const turnAtkRear = battleState.atkRear;
+      addLog(`　⚔ ターンEND：蓄積ATK ${turnAtk} を解放`, 'atk');
+      if (turnAtk > 0 || turnAtkRear > 0) {
+        await applyPlayerDamage(turnAtk, turnAtkRear);
+      }
+      if (battleState.pendingMoraleDamage > 0) {
+        await applyMoraleDamage(battleState.pendingMoraleDamage);
+        battleState.pendingMoraleDamage = 0;
+      }
       setPhaseLabel('敵攻撃', '#e74c3c');
       addLog(`━━ ループ ${loopCount}：敵攻撃 ━━`, 'sys');
       await applyEnemyAttack();
@@ -534,14 +557,13 @@ async function runTurn() {
     const carry = battleState.carryOver;
     battleState.prevLoopAtk = loopAtk;
     battleState.prevLoopDef = loopDef;
-    battleState.atk = carry ? carry.atk : 0;
-    battleState.atkRear = 0;
+    // atk・atkRear・pendingMoraleDamageはターンENDまで蓄積するためリセットしない
     battleState.def = 0;
     battleState.nextBonus = 0;
     battleState.lastType = null;
     battleState.lastInstant = 0;
-    battleState.pendingMoraleDamage = 0;
     if (carry) {
+      battleState.atk += carry.atk;
       battleState.carryOver = null;
       addLog('　↩ 重装歩兵の持越し適用', 'amp');
     }
