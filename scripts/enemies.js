@@ -2,7 +2,7 @@
 // プロトタイプ検証用。敵編成を変更する際はこのファイルを編集してください。
 const ENEMY_FORMATIONS = {
   event1: {
-    label: '襲撃1',
+    label: '襲撃1★',
     desc: 'Act1の序盤の襲撃イベント',
     hint: '槍兵を1~2体と民兵を置いておくだけで勝てる敵の想定',
     units: [
@@ -12,7 +12,7 @@ const ENEMY_FORMATIONS = {
     ]
   },
   event2: {
-    label: '襲撃2',
+    label: '襲撃2★',
     desc: 'Act1の中盤の襲撃イベント',
     hint: '味方ユニットを3〜４体置いておけば勝てる敵の想定',
     units: [
@@ -20,7 +20,7 @@ const ENEMY_FORMATIONS = {
     ]
   },
   enemy1: {
-    label: '拠点1',
+    label: '拠点1★',
     desc: '最初の拠点の敵軍団',
     hint: '味方ユニットを3~4体集めるだけで普通に勝てる敵の想定',
     units: [
@@ -34,10 +34,10 @@ const ENEMY_FORMATIONS = {
     desc: '2番目の拠点の敵軍団',
     hint: '味方ユニットを4~5体集めて何とか勝てる。フローを適切に組めば楽に勝てる敵の想定',
     units: [
-      { id: 'e1', name: '敵重装槍兵A', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e2', name: '敵重装槍兵B', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e3', name: '敵重装槍兵C', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e4', name: '敵重装騎馬兵', maxHp: 16, hp: 16, atk: 10, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e1', name: '敵重装槍兵A', maxHp: 40, hp: 40, atk: 6, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e2', name: '敵重装槍兵B', maxHp: 40, hp: 40, atk: 6, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e3', name: '敵重装騎馬兵A', maxHp: 50, hp: 50, atk: 10, armor: 1, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e4', name: '敵重装騎馬兵B', maxHp: 50, hp: 50, atk: 5, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
     ]
   },
   enemy3: {
@@ -45,10 +45,10 @@ const ENEMY_FORMATIONS = {
     desc: 'ボス前の敵分断',
     hint: '味方ユニットを6~7体集めてフローを適切に組んで初めて勝てる想定。',
     units: [
-      { id: 'e1', name: '敵重装槍兵A', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e2', name: '敵重装槍兵B', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e3', name: '敵重装槍兵C', maxHp: 18, hp: 18, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e4', name: '敵重装騎馬兵', maxHp: 16, hp: 16, atk: 10, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e1', name: '敵重装槍兵A', maxHp: 40, hp: 40, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e2', name: '敵重装槍兵B', maxHp: 40, hp: 40, atk: 8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e3', name: '敵重装騎馬兵A', maxHp: 50, hp: 50, atk: 10, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e4', name: '敵重装騎馬兵B', maxHp: 50, hp: 50, atk: 10, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
     ]
   },
   act1boss: {

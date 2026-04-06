@@ -102,7 +102,21 @@ function lockRestrictions(lock) {
   if (a2Sel) a2Sel.disabled = lock;
 }
 
+function initFormationSelect() {
+  const sel = document.getElementById('formationSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  Object.entries(ENEMY_FORMATIONS).forEach(([key, f]) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = f.label || key;
+    sel.appendChild(opt);
+  });
+  sel.value = currentFormationKey;
+}
+
 function init() {
+  initFormationSelect();
   renderRoster();
   renderArmySlots();
   renderFlowViz();
