@@ -71,7 +71,7 @@ function startBattle() {
     pendingMoraleDamage: 0,
     archerCounterCount: 0,
     archerMaxCount: enemies.filter(e => e.unitType === 'archer').length * 3,
-    archerAmmo: army.filter(u => u.id === 'archer').length * 5,
+    archerAmmo: army.filter(u => u.id === 'archer' || u.id === 'longbow').length * 5,
     crossbowAmmo: army.filter(u => u.id === 'crossbow').length * 5,
     prevLoopAtk: 0,
     prevLoopDef: 0,

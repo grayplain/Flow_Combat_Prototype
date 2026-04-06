@@ -124,11 +124,14 @@ function switchRosterTab(tab, el) {
 function renderRoster() {
   const grid = document.getElementById('rosterGrid');
   grid.innerHTML = '';
-  if (currentRosterTab !== '傭兵') {
+  const tabUnits = currentRosterTab === '傭兵'
+    ? UNITS.filter(u => !u.faction)
+    : UNITS.filter(u => u.faction === currentRosterTab);
+  if (tabUnits.length === 0) {
     grid.innerHTML = '<span style="color:var(--text-dim);font-size:0.75rem;grid-column:1/-1;padding:8px 0;">（準備中）</span>';
     return;
   }
-  UNITS.forEach(u => {
+  tabUnits.forEach(u => {
     const disabled = army.length >= 10;
     const btn = document.createElement('button');
     btn.className = 'unit-btn' + (disabled ? ' disabled' : '');
@@ -343,7 +346,7 @@ function renderArmySlots() {
       slot.appendChild(cbUI);
     }
 
-    if (u.id === 'archer') {
+    if (u.id === 'archer' || u.id === 'longbow') {
       const archerUI = document.createElement('div');
       archerUI.className = 'branch-config';
       const cur = u.archerTarget || 'rear';
@@ -458,7 +461,7 @@ function updateCrossbowTarget(idx, value) {
 }
 
 function updateArcherTarget(idx, value) {
-  if (army[idx] && army[idx].id === 'archer') {
+  if (army[idx] && (army[idx].id === 'archer' || army[idx].id === 'longbow')) {
     army[idx].archerTarget = value;
     renderFlowViz();
   }

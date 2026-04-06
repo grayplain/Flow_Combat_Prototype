@@ -328,6 +328,59 @@ const UNITS = [
       return { type: 'def', msg: `民兵［陣形］：DEF +3　→ 累計DEF ${state.def}` };
     }
   },
+  {
+    id: 'longbow', name: 'ロングボウ', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
+    faction: 'イングランド',
+    core: '後衛全体に8ダメージ（残弾制限：弓兵1体あたり5回/戦闘）',
+    option: '略奪：ATK+1、補給+1',
+    execute: (state, _i, _a, enemies, unit) => {
+      if ((state.archerAmmo || 0) <= 0) {
+        const meleePool = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
+        const allAlive = enemies.filter(e => !e.dead && !e.fled);
+        const target = meleePool.length > 0 ? meleePool[0] : (allAlive.length > 0 ? allAlive[0] : null);
+        if (!target) return { type: 'ctrl', msg: 'ロングボウ：残弾なし・攻撃対象なし（スキップ）' };
+        const dmg = 4;
+        target.hp = Math.max(0, target.hp - dmg);
+        if (target.hp <= 0) target.dead = true;
+        const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+        return { type: 'atk', msg: `ロングボウ【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
+      }
+      const targetPos = (unit && unit.archerTarget) || 'rear';
+      const targetLabel = targetPos === 'front' ? '前衛' : '後衛';
+      const targetPool = enemies.filter(e => !e.dead && !e.fled && e.position === targetPos);
+      const fallbackPool = enemies.filter(e => !e.dead && !e.fled);
+      const pool = targetPool.length > 0 ? targetPool : fallbackPool;
+      const fallbackMsg = targetPool.length === 0 ? `【${targetLabel}不在→前列代替】` : '';
+      if (pool.length === 0) {
+        return { type: 'ctrl', msg: 'ロングボウ：攻撃対象なし（スキップ）' };
+      }
+      const shots = 8;
+      let totalHit = 0;
+      const hitResults = [];
+      for (const target of pool) {
+        if (target.dead) continue;
+        const armorVal = target.armor || 0;
+        const actualDmg = Math.max(0, shots - armorVal);
+        if (actualDmg > 0) {
+          target.hp = Math.max(0, target.hp - actualDmg);
+          if (target.hp <= 0) target.dead = true;
+          totalHit += actualDmg;
+        }
+        const armorNote = armorVal > 0 ? `（armor${armorVal}）` : '';
+        const deadNote = target.dead ? '撃破' : `残HP${target.hp}`;
+        hitResults.push(`${target.name}:${actualDmg}dmg${armorNote}[${deadNote}]`);
+      }
+      state.archerAmmo = Math.max(0, (state.archerAmmo || 0) - 1);
+      const ammoMsg = `　残弾${state.archerAmmo}`;
+      const detail = hitResults.join('　');
+      return { type: 'atk', msg: `ロングボウ【斉射】${fallbackMsg}${targetLabel}全体：合計${totalHit}ダメージ　${detail}${ammoMsg}` };
+    },
+    executeOption: (state) => {
+      state.atk += 1;
+      state.supply += 1;
+      return { type: 'sup', msg: `ロングボウ［略奪］：ATK +1、補給 +1　→ ATK累計 ${state.atk}　補給残 ${state.supply}` };
+    }
+  },
 ];
 
 const COUNTER_CONFIG = {
