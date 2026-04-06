@@ -186,7 +186,7 @@ const UNITS = [
   },
   {
     id: 'archer', name: '弓兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
-    core: '後衛全体に6ダメージ（残弾制限：弓兵1体あたり5回/戦闘）',
+    core: '後衛全体に3ダメージ×2射（残弾制限：弓兵1体あたり5回/戦闘）',
     option: '略奪：ATK+1、補給+1',
     execute: (state, _i, _a, enemies, unit) => {
       if ((state.archerAmmo || 0) <= 0) {
@@ -209,21 +209,27 @@ const UNITS = [
       if (pool.length === 0) {
         return { type: 'ctrl', msg: '弓兵：攻撃対象なし（スキップ）' };
       }
-      const shots = 6;
+      const shotDmg = 3;
+      const shotCount = 2;
       let totalHit = 0;
       const hitResults = [];
       for (const target of pool) {
         if (target.dead) continue;
         const armorVal = target.armor || 0;
-        const actualDmg = Math.max(0, shots - armorVal);
-        if (actualDmg > 0) {
-          target.hp = Math.max(0, target.hp - actualDmg);
-          if (target.hp <= 0) target.dead = true;
-          totalHit += actualDmg;
+        let dmgOnTarget = 0;
+        for (let s = 0; s < shotCount; s++) {
+          if (target.dead) break;
+          const actualDmg = Math.max(0, shotDmg - armorVal);
+          if (actualDmg > 0) {
+            target.hp = Math.max(0, target.hp - actualDmg);
+            if (target.hp <= 0) target.dead = true;
+            dmgOnTarget += actualDmg;
+            totalHit += actualDmg;
+          }
         }
-        const armorNote = armorVal > 0 ? `（armor${armorVal}）` : '';
+        const armorNote = armorVal > 0 ? `（armor${armorVal}×${shotCount}射）` : '';
         const deadNote = target.dead ? '撃破' : `残HP${target.hp}`;
-        hitResults.push(`${target.name}:${actualDmg}dmg${armorNote}[${deadNote}]`);
+        hitResults.push(`${target.name}:${dmgOnTarget}dmg${armorNote}[${deadNote}]`);
       }
       state.archerAmmo = Math.max(0, (state.archerAmmo || 0) - 1);
       const ammoMsg = `　残弾${state.archerAmmo}`;
@@ -329,9 +335,61 @@ const UNITS = [
     }
   },
   {
+    id: 'pike', name: 'パイク兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    faction: 'スイス',
+    core: '前衛1体に即時9ダメージ',
+    option: '陣形：DEF+5',
+    execute: (state, _i, _a, enemies) => {
+      const frontTargets = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
+      const allTargets = frontTargets.length > 0 ? frontTargets : enemies.filter(e => !e.dead && !e.fled);
+      if (allTargets.length === 0) return { type: 'ctrl', msg: 'パイク兵：敵なし（スキップ）' };
+      const target = allTargets[0];
+      const dmg = 9;
+      const armorVal = target.armor || 0;
+      const actualDmg = Math.max(0, dmg - armorVal);
+      target.hp = Math.max(0, target.hp - actualDmg);
+      if (target.hp <= 0) target.dead = true;
+      const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+      const armorMsg = armorVal > 0 ? `（アーマー${armorVal}で軽減）` : '';
+      state.lastInstant = actualDmg;
+      return { type: 'atk', msg: `パイク兵【突撃】：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
+    },
+    executeOption: (state) => {
+      state.def += 5;
+      state.lastInstant = 0;
+      return { type: 'def', msg: `パイク兵［陣形］：DEF +5　→ 累計DEF ${state.def}` };
+    }
+  },
+  {
+    id: 'halberd', name: 'ハルバード兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    faction: 'スイス',
+    core: '前衛1体に即時9ダメージ',
+    option: '陣形：DEF+5',
+    execute: (state, _i, _a, enemies) => {
+      const frontTargets = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
+      const allTargets = frontTargets.length > 0 ? frontTargets : enemies.filter(e => !e.dead && !e.fled);
+      if (allTargets.length === 0) return { type: 'ctrl', msg: 'ハルバード兵：敵なし（スキップ）' };
+      const target = allTargets[0];
+      const dmg = 9;
+      const armorVal = target.armor || 0;
+      const actualDmg = Math.max(0, dmg - armorVal);
+      target.hp = Math.max(0, target.hp - actualDmg);
+      if (target.hp <= 0) target.dead = true;
+      const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+      const armorMsg = armorVal > 0 ? `（アーマー${armorVal}で軽減）` : '';
+      state.lastInstant = actualDmg;
+      return { type: 'atk', msg: `ハルバード兵【突撃】：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
+    },
+    executeOption: (state) => {
+      state.def += 5;
+      state.lastInstant = 0;
+      return { type: 'def', msg: `ハルバード兵［陣形］：DEF +5　→ 累計DEF ${state.def}` };
+    }
+  },
+  {
     id: 'longbow', name: 'ロングボウ', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
     faction: 'イングランド',
-    core: '後衛全体に8ダメージ（残弾制限：弓兵1体あたり5回/戦闘）',
+    core: '後衛全体に4ダメージ×2射（残弾制限：弓兵1体あたり5回/戦闘）',
     option: '略奪：ATK+1、補給+1',
     execute: (state, _i, _a, enemies, unit) => {
       if ((state.archerAmmo || 0) <= 0) {
@@ -354,21 +412,27 @@ const UNITS = [
       if (pool.length === 0) {
         return { type: 'ctrl', msg: 'ロングボウ：攻撃対象なし（スキップ）' };
       }
-      const shots = 8;
+      const shotDmg = 4;
+      const shotCount = 2;
       let totalHit = 0;
       const hitResults = [];
       for (const target of pool) {
         if (target.dead) continue;
         const armorVal = target.armor || 0;
-        const actualDmg = Math.max(0, shots - armorVal);
-        if (actualDmg > 0) {
-          target.hp = Math.max(0, target.hp - actualDmg);
-          if (target.hp <= 0) target.dead = true;
-          totalHit += actualDmg;
+        let dmgOnTarget = 0;
+        for (let s = 0; s < shotCount; s++) {
+          if (target.dead) break;
+          const actualDmg = Math.max(0, shotDmg - armorVal);
+          if (actualDmg > 0) {
+            target.hp = Math.max(0, target.hp - actualDmg);
+            if (target.hp <= 0) target.dead = true;
+            dmgOnTarget += actualDmg;
+            totalHit += actualDmg;
+          }
         }
-        const armorNote = armorVal > 0 ? `（armor${armorVal}）` : '';
+        const armorNote = armorVal > 0 ? `（armor${armorVal}×${shotCount}射）` : '';
         const deadNote = target.dead ? '撃破' : `残HP${target.hp}`;
-        hitResults.push(`${target.name}:${actualDmg}dmg${armorNote}[${deadNote}]`);
+        hitResults.push(`${target.name}:${dmgOnTarget}dmg${armorNote}[${deadNote}]`);
       }
       state.archerAmmo = Math.max(0, (state.archerAmmo || 0) - 1);
       const ammoMsg = `　残弾${state.archerAmmo}`;
