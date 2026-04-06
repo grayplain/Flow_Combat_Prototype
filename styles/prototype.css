@@ -161,6 +161,37 @@ header p {
   font-size: 0.75rem;
 }
 
+.roster-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.roster-tab {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+  color: var(--text-dim);
+  font-family: 'Crimson Text', serif;
+  font-size: 0.72rem;
+  padding: 4px 2px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.roster-tab:hover {
+  color: var(--text-main);
+  border-color: var(--gold-dim);
+}
+
+.roster-tab.active {
+  background: var(--bg-card);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
 .unit-roster {
   display: grid;
   grid-template-columns: 1fr 1fr;

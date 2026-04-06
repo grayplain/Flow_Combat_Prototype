@@ -112,9 +112,22 @@ function init() {
   refreshA2NodeSelect();
 }
 
+let currentRosterTab = '傭兵';
+
+function switchRosterTab(tab, el) {
+  currentRosterTab = tab;
+  document.querySelectorAll('.roster-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderRoster();
+}
+
 function renderRoster() {
   const grid = document.getElementById('rosterGrid');
   grid.innerHTML = '';
+  if (currentRosterTab !== '傭兵') {
+    grid.innerHTML = '<span style="color:var(--text-dim);font-size:0.75rem;grid-column:1/-1;padding:8px 0;">（準備中）</span>';
+    return;
+  }
   UNITS.forEach(u => {
     const disabled = army.length >= 10;
     const btn = document.createElement('button');

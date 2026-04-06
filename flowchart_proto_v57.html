@@ -43,6 +43,12 @@
   <div class="left-col">
     <div class="panel" id="rosterPanel">
       <div class="panel-title">ユニット選択（最大10体）</div>
+      <div class="roster-tabs">
+        <button class="roster-tab active" onclick="switchRosterTab('傭兵', this)">傭兵</button>
+        <button class="roster-tab" onclick="switchRosterTab('イングランド', this)">イングランド</button>
+        <button class="roster-tab" onclick="switchRosterTab('フランス', this)">フランス</button>
+        <button class="roster-tab" onclick="switchRosterTab('スイス', this)">スイス</button>
+      </div>
       <div class="unit-roster" id="rosterGrid"></div>
     </div>
 
