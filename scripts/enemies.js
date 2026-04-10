@@ -19,6 +19,15 @@ const ENEMY_FORMATIONS = {
       { id: 'e1', name: '逃亡騎士', maxHp: 100, hp: 100, atk: 10, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
     ]
   },
+  event3: {
+    label: '襲撃3',
+    desc: 'Act1の中盤の襲撃イベント',
+    hint: '味方ユニットを3〜４体置いておけば勝てる敵の想定',
+    units: [
+      { id: 'e1', name: 'クラーケン', maxHp: 100, hp: 100, atk: 1, atkCount:8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
+    ]
+  },  
+  
   enemy1: {
     label: '拠点1★',
     desc: '最初の拠点の敵軍団',
@@ -30,14 +39,14 @@ const ENEMY_FORMATIONS = {
     ]
   },
   enemy2: {
-    label: '拠点2',
+    label: '拠点2★',
     desc: '2番目の拠点の敵軍団',
     hint: '味方ユニットを4~5体集めて何とか勝てる。フローを適切に組めば楽に勝てる敵の想定',
     units: [
-      { id: 'e1', name: '敵重装槍兵A', maxHp: 40, hp: 40, atk: 6, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e1', name: '敵グレイブ兵A', maxHp: 30, hp: 30, atk: 8, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
       { id: 'e2', name: '敵重装槍兵B', maxHp: 40, hp: 40, atk: 6, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'spear' },
-      { id: 'e3', name: '敵重装騎馬兵A', maxHp: 50, hp: 50, atk: 10, armor: 1, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
-      { id: 'e4', name: '敵重装騎馬兵B', maxHp: 50, hp: 50, atk: 5, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e3', name: '敵重装騎馬兵A', maxHp: 40, hp: 40, atk: 8, armor: 0, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
+      { id: 'e4', name: '敵重装騎馬兵B', maxHp: 60, hp: 60, atk: 5, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
     ]
   },
   enemy3: {

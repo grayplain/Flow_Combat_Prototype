@@ -99,7 +99,7 @@ function generateEnemyIntents() {
     const cfg = intentConfig[e.id] || { type: 'random', value: e.atk };
 
     if (cfg.type === 'atk') {
-      enemyIntents.push({ enemyId: e.id, type: 'atk', value: cfg.value });
+      enemyIntents.push({ enemyId: e.id, type: 'atk', value: cfg.value, atkCount: e.atkCount || 1 });
     } else if (cfg.type === 'def') {
       enemyIntents.push({ enemyId: e.id, type: 'def', value: cfg.value });
     } else {
@@ -108,8 +108,7 @@ function generateEnemyIntents() {
         const defVal = Math.floor(Math.random() * 4) + 2;
         enemyIntents.push({ enemyId: e.id, type: 'def', value: defVal });
       } else {
-        const atkVal = e.atk + Math.floor(Math.random() * 3) - 1;
-        enemyIntents.push({ enemyId: e.id, type: 'atk', value: Math.max(1, atkVal) });
+        enemyIntents.push({ enemyId: e.id, type: 'atk', value: e.atk, atkCount: e.atkCount || 1 });
       }
     }
   });
@@ -133,11 +132,14 @@ function renderEnemyIntents() {
     const item = document.createElement('div');
     item.className = 'intent-item' + (intent.type === 'def' ? ' intent-def' : '');
     if (intent.type === 'atk') {
+      const atkCount = intent.atkCount || 1;
+      const totalDmg = intent.value * atkCount;
+      const atkCountLabel = atkCount > 1 ? `×${atkCount}回` : '';
       item.innerHTML = `
         <span class="intent-icon">⚔</span>
         <span class="intent-name">${enemy.name}</span>
-        <span class="intent-action">攻撃</span>
-        <span class="intent-value">${intent.value} ダメージ</span>
+        <span class="intent-action">攻撃${atkCountLabel}</span>
+        <span class="intent-value">${totalDmg} ダメージ</span>
       `;
     } else {
       item.innerHTML = `
@@ -191,7 +193,7 @@ async function runTurn() {
   updateAmmoDisplay(battleState.archerAmmo || 0, battleState.crossbowAmmo || 0);
 
   generateEnemyIntents();
-  battleState.enemyIntentAtk = enemyIntents.reduce((s, i) => i.type === 'atk' ? s + i.value : s, 0);
+  battleState.enemyIntentAtk = enemyIntents.reduce((s, i) => i.type === 'atk' ? s + i.value * (i.atkCount || 1) : s, 0);
   renderEnemyIntents();
   const eidEl = document.getElementById('enemyIntentAtkDisplay');
   if (eidEl) eidEl.textContent = battleState.enemyIntentAtk;
@@ -750,44 +752,49 @@ async function applyEnemyAttack() {
 
   const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer');
   if (aliveEnemyArchers.length > 0) {
-    const archerCount = aliveEnemyArchers.length;
-    const totalArcherDmg = aliveEnemyArchers.reduce((sum, e) => sum + e.atk, 0);
-    const targetPos = Math.random() < 0.5 ? 'front' : 'rear';
-    const targetPosLabel = targetPos === 'front' ? '前衛' : '後衛';
-    const posTargets = myUnitsHp.filter((mu, idx) => !mu.dead && army[idx] && (army[idx].position || 'front') === targetPos);
-    const allAlive = myUnitsHp.filter(mu => !mu.dead);
-    const shotTargets = posTargets.length > 0 ? posTargets : allAlive;
-    const fallbackMsg = posTargets.length === 0 ? `【${targetPosLabel}不在→全体代替】` : '';
-    addLog(`　🏹 敵弓兵【斉射×${archerCount}】${fallbackMsg}→ ${targetPosLabel}全体に${totalArcherDmg}ダメージ`, 'atk');
-    let archerTotalDealt = 0;
-    for (const mu of shotTargets) {
-      if (mu.dead) continue;
-      let dmg = totalArcherDmg;
-      if (battleState.shield > 0) {
-        const absorbed = Math.min(battleState.shield, dmg);
-        battleState.shield -= absorbed;
-        dmg -= absorbed;
-        addLog(`　　🛡 シールドが ${absorbed} 吸収（残シールド：${battleState.shield}）`, 'def');
-        updateShieldDisplay(battleState.shield);
+    const maxAtkCount = aliveEnemyArchers.reduce((max, e) => Math.max(max, e.atkCount || 1), 1);
+    for (let hit = 1; hit <= maxAtkCount; hit++) {
+      const hitArchers = aliveEnemyArchers.filter(e => (e.atkCount || 1) >= hit);
+      if (hitArchers.length === 0) continue;
+      const hitDmg = hitArchers.reduce((sum, e) => sum + e.atk, 0);
+      const targetPos = Math.random() < 0.5 ? 'front' : 'rear';
+      const targetPosLabel = targetPos === 'front' ? '前衛' : '後衛';
+      const posTargets = myUnitsHp.filter((mu, idx) => !mu.dead && army[idx] && (army[idx].position || 'front') === targetPos);
+      const allAlive = myUnitsHp.filter(mu => !mu.dead);
+      const shotTargets = posTargets.length > 0 ? posTargets : allAlive;
+      const fallbackMsg = posTargets.length === 0 ? `【${targetPosLabel}不在→全体代替】` : '';
+      const hitLabel = maxAtkCount > 1 ? `（${hit}/${maxAtkCount}回目）` : '';
+      addLog(`　🏹 敵弓兵【斉射×${hitArchers.length}】${fallbackMsg}${hitLabel}→ ${targetPosLabel}全体に${hitDmg}ダメージ`, 'atk');
+      let archerTotalDealt = 0;
+      for (const mu of shotTargets) {
+        if (mu.dead) continue;
+        let dmg = hitDmg;
+        if (battleState.shield > 0) {
+          const absorbed = Math.min(battleState.shield, dmg);
+          battleState.shield -= absorbed;
+          dmg -= absorbed;
+          addLog(`　　🛡 シールドが ${absorbed} 吸収（残シールド：${battleState.shield}）`, 'def');
+          updateShieldDisplay(battleState.shield);
+        }
+        if (dmg <= 0) {
+          addLog(`　　${mu.name}：シールドが完全防御`, 'def');
+          continue;
+        }
+        const armorVal = mu.armor || 0;
+        const actualDmg = Math.max(0, dmg - armorVal);
+        if (armorVal > 0) addLog(`　　🛡 ${mu.name}【アーマー${armorVal}】軽減`, 'def');
+        mu.hp = Math.max(0, mu.hp - actualDmg);
+        archerTotalDealt += actualDmg;
+        const deadMsg = mu.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${mu.hp}`;
+        addLog(`　　→ ${mu.name}：${actualDmg}ダメージ${deadMsg}`, 'atk');
+        if (mu.hp <= 0) {
+          mu.dead = true;
+          renderMyUnits();
+        }
       }
-      if (dmg <= 0) {
-        addLog(`　　${mu.name}：シールドが完全防御`, 'def');
-        continue;
-      }
-      const armorVal = mu.armor || 0;
-      const actualDmg = Math.max(0, dmg - armorVal);
-      if (armorVal > 0) addLog(`　　🛡 ${mu.name}【アーマー${armorVal}】軽減`, 'def');
-      mu.hp = Math.max(0, mu.hp - actualDmg);
-      archerTotalDealt += actualDmg;
-      const deadMsg = mu.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${mu.hp}`;
-      addLog(`　　→ ${mu.name}：${actualDmg}ダメージ${deadMsg}`, 'atk');
-      if (mu.hp <= 0) {
-        mu.dead = true;
-        renderMyUnits();
-      }
+      if (archerTotalDealt > 0) totalDealt += archerTotalDealt;
+      renderMyUnits();
     }
-    if (archerTotalDealt > 0) totalDealt += archerTotalDealt;
-    renderMyUnits();
   }
 
   const aliveEnemySpears = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'spear').length;
@@ -800,52 +807,60 @@ async function applyEnemyAttack() {
   });
 
   for (const { enemy, atkVal, spearBonus } of attackers) {
-    const target = selectTarget(enemy);
-    if (!target) break;
+    const atkCount = enemy.atkCount || 1;
+    let retaliationDone = false;
 
-    let dmg = atkVal;
-    if (battleState.shield > 0) {
-      const absorbed = Math.min(battleState.shield, dmg);
-      battleState.shield -= absorbed;
-      dmg -= absorbed;
-      addLog(`　🛡 シールドが ${absorbed} 吸収（${enemy.name}の攻撃、残シールド：${battleState.shield}）`, 'def');
-      updateShieldDisplay(battleState.shield);
-    }
+    for (let hit = 1; hit <= atkCount; hit++) {
+      if (enemy.dead || enemy.fled) break;
+      const target = selectTarget(enemy);
+      if (!target) break;
 
-    if (dmg <= 0) {
-      addLog(`　⚔ ${enemy.name} → ${target.name}：シールドが完全防御`, 'def');
-      continue;
-    }
+      let dmg = atkVal;
+      if (battleState.shield > 0) {
+        const absorbed = Math.min(battleState.shield, dmg);
+        battleState.shield -= absorbed;
+        dmg -= absorbed;
+        addLog(`　🛡 シールドが ${absorbed} 吸収（${enemy.name}の攻撃、残シールド：${battleState.shield}）`, 'def');
+        updateShieldDisplay(battleState.shield);
+      }
 
-    const armorVal = target.armor || 0;
-    const actualDmg = Math.max(0, dmg - armorVal);
-    if (armorVal > 0) addLog(`　🛡 ${target.name}【アーマー${armorVal}】ダメージ軽減`, 'def');
+      if (dmg <= 0) {
+        addLog(`　⚔ ${enemy.name} → ${target.name}：シールドが完全防御`, 'def');
+        continue;
+      }
 
-    target.hp = Math.max(0, target.hp - actualDmg);
-    totalDealt += actualDmg;
+      const armorVal = target.armor || 0;
+      const actualDmg = Math.max(0, dmg - armorVal);
+      if (armorVal > 0) addLog(`　🛡 ${target.name}【アーマー${armorVal}】ダメージ軽減`, 'def');
 
-    const typeIcon = { spear: '⚔', archer: '🏹', cavalry: '🐴' }[enemy.unitType] || '⚔';
-    const deadMsg = target.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
-    const spearBonusMsg = spearBonus > 0 ? `【槍衾×${aliveEnemySpears} +${spearBonus}】` : '';
-    addLog(`　${typeIcon} ${enemy.name} → ${target.name}：${actualDmg}ダメージ${spearBonusMsg}${deadMsg}`, 'atk');
+      target.hp = Math.max(0, target.hp - actualDmg);
+      totalDealt += actualDmg;
 
-    if (target.hp <= 0) {
-      target.dead = true;
-      renderMyUnits();
-    }
+      const typeIcon = { spear: '⚔', archer: '🏹', cavalry: '🐴' }[enemy.unitType] || '⚔';
+      const deadMsg = target.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+      const spearBonusMsg = spearBonus > 0 ? `【槍衾×${aliveEnemySpears} +${spearBonus}】` : '';
+      const hitLabel = atkCount > 1 ? `（${hit}/${atkCount}回目）` : '';
+      addLog(`　${typeIcon} ${enemy.name} → ${target.name}：${actualDmg}ダメージ${spearBonusMsg}${hitLabel}${deadMsg}`, 'atk');
 
-    if (ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
-      const retConf = MELEE_RETALIATION[target.id];
-      if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
-        const armorEnemy = enemy.armor || 0;
-        const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
-        if (retDmg > 0) {
-          enemy.hp = Math.max(0, enemy.hp - retDmg);
-          if (enemy.hp <= 0) enemy.dead = true;
-          const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
-          const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
-          addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
-          renderEnemies();
+      if (target.hp <= 0) {
+        target.dead = true;
+        renderMyUnits();
+      }
+
+      if (!retaliationDone && ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
+        const retConf = MELEE_RETALIATION[target.id];
+        if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
+          const armorEnemy = enemy.armor || 0;
+          const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
+          if (retDmg > 0) {
+            enemy.hp = Math.max(0, enemy.hp - retDmg);
+            if (enemy.hp <= 0) enemy.dead = true;
+            const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
+            const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
+            addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
+            renderEnemies();
+          }
+          retaliationDone = true;
         }
       }
     }
