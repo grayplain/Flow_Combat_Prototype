@@ -78,6 +78,10 @@ function renderFlowViz(activeIdx = -1, doneSet = new Set(), jumpedSet = new Set(
     const modeBadge = u.option
       ? `<div style="position:absolute;top:-6px;right:-6px;font-size:0.5rem;padding:1px 3px;border-radius:3px;${u.useOption ? 'background:rgba(230,126,34,0.8);color:#000;' : 'background:rgba(46,109,164,0.7);color:#fff;'}">${u.useOption ? 'OPT' : 'CORE'}</div>`
       : '';
+    const hpUnit = myUnitsHp && myUnitsHp[i];
+    const crossbowStateBadge = (u.id === 'crossbow' && hpUnit && hpUnit.crossbowLoaded !== undefined)
+      ? `<div style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:0.5rem;padding:1px 4px;border-radius:3px;white-space:nowrap;${hpUnit.crossbowLoaded ? 'background:rgba(231,76,60,0.85);color:#fff;' : 'background:rgba(52,152,219,0.7);color:#fff;'}">${hpUnit.crossbowLoaded ? '発射準備完了' : '装填中'}</div>`
+      : '';
     const abilityText = u.useOption ? (u.option || u.core) : u.core;
 
     node.innerHTML = `
@@ -85,6 +89,7 @@ function renderFlowViz(activeIdx = -1, doneSet = new Set(), jumpedSet = new Set(
         ${halfBadge}
         ${stopBadge}
         ${modeBadge}
+        ${crossbowStateBadge}
         <div class="node-name">${u.name}</div>
         <div class="node-ability" style="${u.useOption ? 'color:#fca;' : ''}">${abilityText}</div>
         ${branchSummary}

@@ -244,26 +244,34 @@ const UNITS = [
   },
   {
     id: 'crossbow', name: '弩兵', cost: 1, supplyCost: 1, maxHp: 20, theme: 'atk', tag: 'tag-atk', tagLabel: '精密射撃',
-    core: '敵兵種指定・即時14ダメージ（アーマー貫通、残弾制限：1体あたり5回/戦闘）',
+    core: '①装填→②発射：敵兵種指定・即時14ダメージ（アーマー貫通、残弾制限：1体あたり5回/戦闘）',
     option: '貫通射撃：シールド無視で即時3ダメージ',
     crossbowTarget: 'spear',
     execute: (state, idx, army, enemies) => {
+      const unit = myUnitsHp[idx];
+      if (!unit.crossbowLoaded) {
+        // 状態: 矢の装填 → 矢の発射へ遷移
+        unit.crossbowLoaded = true;
+        return { type: 'ctrl', msg: '弩兵【装填】矢を装填した　→ 次のノード実行時に発射可能' };
+      }
+      // 状態: 矢の発射 → 装填状態に戻す
+      unit.crossbowLoaded = false;
       if ((state.crossbowAmmo || 0) <= 0) {
         const meleePool = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
         const allAlive = enemies.filter(e => !e.dead && !e.fled);
-        const target = meleePool.length > 0 ? meleePool[0] : (allAlive.length > 0 ? allAlive[0] : null);
-        if (!target) return { type: 'ctrl', msg: '弩兵：残弾なし・攻撃対象なし（スキップ）' };
+        const meleeTarget = meleePool.length > 0 ? meleePool[0] : (allAlive.length > 0 ? allAlive[0] : null);
+        if (!meleeTarget) return { type: 'ctrl', msg: '弩兵：残弾なし・攻撃対象なし（スキップ）' };
         const dmg = 4;
-        target.hp = Math.max(0, target.hp - dmg);
-        if (target.hp <= 0) target.dead = true;
-        const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
-        return { type: 'atk', msg: `弩兵【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
+        meleeTarget.hp = Math.max(0, meleeTarget.hp - dmg);
+        if (meleeTarget.hp <= 0) meleeTarget.dead = true;
+        const deadMsg = meleeTarget.dead ? '　→ 撃破！' : `　→ 残HP${meleeTarget.hp}`;
+        return { type: 'atk', msg: `弩兵【発射・近接】${meleeTarget.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
       }
-      const unit = army[idx];
-      const target = unit.crossbowTarget || 'spear';
-      const targetLabel = { spear: '槍兵', archer: '弓兵', cavalry: '騎馬兵' }[target] || target;
+      const armyUnit = army[idx];
+      const targetType = armyUnit.crossbowTarget || 'spear';
+      const targetLabel = { spear: '槍兵', archer: '弓兵', cavalry: '騎馬兵' }[targetType] || targetType;
       const dmg = 14;
-      const targetEnemies = enemies.filter(e => !e.dead && !e.fled && e.unitType === target);
+      const targetEnemies = enemies.filter(e => !e.dead && !e.fled && e.unitType === targetType);
       const fallbackEnemies = enemies.filter(e => !e.dead && !e.fled && e.position === 'front');
       const allAlive = enemies.filter(e => !e.dead && !e.fled);
       const pool = targetEnemies.length > 0 ? targetEnemies
@@ -276,7 +284,7 @@ const UNITS = [
       state.crossbowAmmo = Math.max(0, (state.crossbowAmmo || 0) - 1);
       const deadMsg = victim.dead ? '　→ 撃破！' : `　→ 残HP${victim.hp}`;
       const fallbackMsg = targetEnemies.length === 0 ? `【${targetLabel}不在→前衛代替】` : '';
-      return { type: 'atk', msg: `弩兵${fallbackMsg}：${victim.name}に即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}　残弾${state.crossbowAmmo}` };
+      return { type: 'atk', msg: `弩兵【発射】${fallbackMsg}：${victim.name}に即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}　残弾${state.crossbowAmmo}` };
     },
     executeOption: (state, idx, army, enemies) => {
       const unit = army[idx];
