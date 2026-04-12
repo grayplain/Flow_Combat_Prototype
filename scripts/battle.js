@@ -17,7 +17,7 @@ function startBattle() {
     tl.style.color = 'var(--gold-bright)';
   }
 
-  enemies = getEnemyTemplate().map(e => ({ ...e, morale: e.maxMorale, fled: false }));
+  enemies = getEnemyTemplate().map(e => ({ ...e, morale: e.maxMorale, fled: false, patternIndex: 0 }));
   enemyArmyShield = 0;
   updateEnemyShieldDisplay(0);
   const eidElReset = document.getElementById('enemyIntentAtkDisplay');
@@ -95,21 +95,26 @@ function startBattle() {
 
 function generateEnemyIntents() {
   enemyIntents = [];
-  enemies.filter(e => !e.dead && !e.fled).forEach(e => {
-    const cfg = intentConfig[e.id] || { type: 'random', value: e.atk };
+  const patterns = ENEMY_ACTION_PATTERNS[currentFormationKey] || {};
 
-    if (cfg.type === 'atk') {
-      enemyIntents.push({ enemyId: e.id, type: 'atk', value: cfg.value, atkCount: e.atkCount || 1 });
-    } else if (cfg.type === 'def') {
-      enemyIntents.push({ enemyId: e.id, type: 'def', value: cfg.value });
-    } else {
-      const defChance = e.position === 'rear' ? 0.4 : 0.2;
-      if (Math.random() < defChance) {
-        const defVal = Math.floor(Math.random() * 4) + 2;
-        enemyIntents.push({ enemyId: e.id, type: 'def', value: defVal });
+  enemies.filter(e => !e.dead && !e.fled).forEach(e => {
+    const pattern = patterns[e.id];
+
+    if (pattern && pattern.length > 0) {
+      // 行動パターン定義あり → パターンに従う（ループ）
+      const current = pattern[e.patternIndex % pattern.length];
+      const handler = ACTION_HANDLERS[current.action];
+      if (handler) {
+        const intent = handler(e, current.value);
+        enemyIntents.push({ enemyId: e.id, ...intent });
       } else {
+        // 未定義アクション → デフォルト攻撃にフォールバック
         enemyIntents.push({ enemyId: e.id, type: 'atk', value: e.atk, atkCount: e.atkCount || 1 });
       }
+      e.patternIndex++;
+    } else {
+      // 行動パターン未定義 → 即時atkダメージ
+      enemyIntents.push({ enemyId: e.id, type: 'atk', value: e.atk, atkCount: e.atkCount || 1 });
     }
   });
 }
