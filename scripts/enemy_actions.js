@@ -11,18 +11,25 @@ const ENEMY_ACTION_PATTERNS = {
 
   // --- 襲撃2：逃亡騎士（サンプルパターン） ---
   event2: {
-//    'e1': [
-//      { action: 'atk', value: [10] },     // ターン1: 10ダメージ×1回
-//      { action: 'def', value: [5] },       // ターン2: シールド+5
-//      { action: 'atk', value: [5, 2] },    // ターン3: 5ダメージ×2回
-//      { action: 'atk', value: [10] },      // ターン4: 10ダメージ×1回
-//    ],
     'e1': [
-      { action: 'atk', value: [800] },
-      { action: 'atk', value: [900] },
-      { action: 'atk', value: [1000] },            
+      { action: 'atk', value: [8] },     // ターン1: 108ダメージ×1回
+      { action: 'def', value: [5] },       // ターン2: シールド+5
+      { action: 'atk', value: [5, 2] },    // ターン3: 5ダメージ×2回
+      { action: 'atk', value: [10] },      // ターン4: 10ダメージ×1回
     ],
-
   },
+  
+  // 新規追加アクションのテスト用
+  event3: {
+    'e1': [
+      { action: 'targeted_atk', value: [5, 'spear'] }, 
+      { action: 'targeted_atk', value: [6, 'archer'] },
+      { action: 'targeted_atk', value: [7, 'rear'] },
+      { action: 'targeted_atk', value: [8, 'max_hp'] }, 
+      { action: 'targeted_atk', value: [9, 'nullnull'] },       
+      { action: 'targeted_atk', value: [10, 'front'] },        
+
+    ],
+  },  
 
 };

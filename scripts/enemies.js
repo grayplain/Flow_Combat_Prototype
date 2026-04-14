@@ -24,7 +24,7 @@ const ENEMY_FORMATIONS = {
     desc: 'Act1の中盤の襲撃イベント',
     hint: '味方ユニットを3〜４体置いておけば勝てる敵の想定',
     units: [
-      { id: 'e1', name: 'クラーケン', maxHp: 100, hp: 100, atk: 1, atkCount:8, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
+      { id: 'e1', name: 'クラーケン', maxHp: 100, hp: 100, atk: 1, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
     ]
   },  
   
