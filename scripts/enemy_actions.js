@@ -22,7 +22,7 @@ const ENEMY_ACTION_PATTERNS = {
   // 新規追加アクションのテスト用
   event3: {
     'e1': [
-{ action: 'buff', value: ['cavalry', 'atk', 5, false] },  // 騎馬兵ATK+5、不在なら先頭
+{ action: 'buff', value: ['cavalry', 'armor', 100, false] },  // 騎馬兵ATK+5、不在なら先頭
 { action: 'atk', value: [8] },     // ターン1: 108ダメージ×1回
 
     ],
