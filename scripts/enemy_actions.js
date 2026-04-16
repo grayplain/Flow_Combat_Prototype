@@ -22,14 +22,13 @@ const ENEMY_ACTION_PATTERNS = {
   // 新規追加アクションのテスト用
   event3: {
     'e1': [
-      { action: 'targeted_atk', value: [5, 'spear'] }, 
-      { action: 'targeted_atk', value: [6, 'archer'] },
-      { action: 'targeted_atk', value: [7, 'rear'] },
-      { action: 'targeted_atk', value: [8, 'max_hp'] }, 
-      { action: 'targeted_atk', value: [9, 'nullnull'] },       
-      { action: 'targeted_atk', value: [10, 'front'] },        
+{ action: 'buff', value: ['cavalry', 'atk', 5, false] },  // 騎馬兵ATK+5、不在なら先頭
+{ action: 'atk', value: [8] },     // ターン1: 108ダメージ×1回
 
     ],
   },  
 
 };
+
+
+

@@ -17,7 +17,7 @@ function startBattle() {
     tl.style.color = 'var(--gold-bright)';
   }
 
-  enemies = getEnemyTemplate().map(e => ({ ...e, morale: e.maxMorale, fled: false, patternIndex: 0 }));
+  enemies = getEnemyTemplate().map(e => ({ ...e, morale: e.maxMorale, fled: false, patternIndex: 0, baseAtk: e.atk }));
   enemyArmyShield = 0;
   updateEnemyShieldDisplay(0);
   const eidElReset = document.getElementById('enemyIntentAtkDisplay');
@@ -149,7 +149,7 @@ function renderEnemyIntents() {
     if (!enemy || enemy.dead) return;
 
     const item = document.createElement('div');
-    item.className = 'intent-item' + (intent.type === 'def' ? ' intent-def' : '');
+    item.className = 'intent-item' + (intent.type === 'def' || intent.type === 'buff' ? ' intent-def' : '');
     if (intent.type === 'atk') {
       const atkCount = intent.atkCount || 1;
       const totalDmg = intent.value * atkCount;
@@ -170,6 +170,22 @@ function renderEnemyIntents() {
         <span class="intent-name">${enemy.name}</span>
         <span class="intent-action">狙い撃ち${atkCountLabel}（${targetLabel}）</span>
         <span class="intent-value">${totalDmg} ダメージ</span>
+      `;
+    } else if (intent.type === 'buff') {
+      const statLabel = { atk: 'ATK', armor: 'アーマー', hp: 'HP' }[intent.stat] || intent.stat;
+      const specStr = typeof intent.targetSpec === 'number'
+        ? (BUFF_TARGET_CODES[intent.targetSpec] || String(intent.targetSpec))
+        : String(intent.targetSpec);
+      const BUFF_UNIT_NAMES = {
+        none: '雑兵', spear: '槍兵', cavalry: '騎馬兵',
+        archer: '弓兵', knight: '騎士', crossbow: '弩兵',
+      };
+      const targetLabel = BUFF_UNIT_NAMES[specStr] || specStr;
+      item.innerHTML = `
+        <span class="intent-icon">✨</span>
+        <span class="intent-name">${enemy.name}</span>
+        <span class="intent-action">バフ（${targetLabel}）</span>
+        <span class="intent-value">${statLabel}+${intent.value}</span>
       `;
     } else {
       item.innerHTML = `
@@ -798,12 +814,50 @@ async function applyEnemyAttack() {
       enemyArmyShield += intent.value;
       addLog(`　🛡 ${enemy.name}：防御態勢 → 軍団シールド +${intent.value}（累計${enemyArmyShield}）`, 'def');
       updateEnemyShieldDisplay(enemyArmyShield);
+    } else if (intent.type === 'buff') {
+      const aliveEnemies = enemies.filter(e => !e.dead && !e.fled);
+      const specStr = typeof intent.targetSpec === 'number'
+        ? (BUFF_TARGET_CODES[intent.targetSpec] || String(intent.targetSpec))
+        : String(intent.targetSpec);
+
+      // 対象兵種を前から探す（position:'front'優先、同順位は配列順）
+      const frontFirst = [
+        ...aliveEnemies.filter(e => e.position === 'front'),
+        ...aliveEnemies.filter(e => e.position !== 'front'),
+      ];
+      let target = frontFirst.find(e => e.unitType === specStr);
+
+      if (!target) {
+        if (intent.strict) {
+          addLog(`　✨ ${enemy.name}【バフ】：対象兵種（${specStr}）不在 → スキップ`, 'sys');
+          continue;
+        }
+        target = aliveEnemies[0]; // 先頭にフォールバック
+      }
+      if (!target) continue;
+
+      const statLabel = { atk: 'ATK', armor: 'アーマー', hp: 'HP' }[intent.stat] || intent.stat;
+      if (intent.stat === 'atk') {
+        target.atk += intent.value;
+      } else if (intent.stat === 'armor') {
+        target.armor = (target.armor || 0) + intent.value;
+      } else if (intent.stat === 'hp') {
+        target.hp    += intent.value;
+        target.maxHp += intent.value;
+      }
+      addLog(`　✨ ${enemy.name}【バフ】→ ${target.name}：${statLabel}+${intent.value}`, 'amp');
+      renderEnemies();
     }
   }
 
   let totalDealt = 0;
 
-  const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer');
+  // 通常攻撃を行わない敵ID（targeted_atk / buff は自前ループで処理するため除外）
+  const nonDefaultAtkIds = new Set(
+    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff').map(it => it.enemyId)
+  );
+
+  const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer' && !nonDefaultAtkIds.has(e.id));
   if (aliveEnemyArchers.length > 0) {
     const maxAtkCount = aliveEnemyArchers.reduce((max, e) => Math.max(max, e.atkCount || 1), 1);
     for (let hit = 1; hit <= maxAtkCount; hit++) {
@@ -852,8 +906,7 @@ async function applyEnemyAttack() {
 
   const aliveEnemySpears = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'spear').length;
   const enemySpearBonus = aliveEnemySpears >= 3 ? 2 : aliveEnemySpears === 2 ? 1 : 0;
-  const targetedAtkIds = new Set(enemyIntents.filter(it => it.type === 'targeted_atk').map(it => it.enemyId));
-  const attackers = enemies.filter(e => !e.dead && !e.fled && e.unitType !== 'archer' && !targetedAtkIds.has(e.id)).map(e => {
+  const attackers = enemies.filter(e => !e.dead && !e.fled && e.unitType !== 'archer' && !nonDefaultAtkIds.has(e.id)).map(e => {
     const intent = enemyIntents.find(it => it.enemyId === e.id && it.type === 'atk');
     const baseAtk = intent ? intent.value : e.atk;
     const bonus = e.unitType === 'spear' ? enemySpearBonus : 0;
