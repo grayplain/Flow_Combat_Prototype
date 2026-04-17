@@ -844,6 +844,55 @@ header p {
   background: rgba(22, 160, 133, 0.18);
 }
 
+.block-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 8px 8px;
+  border-radius: 5px;
+  border: 1px solid;
+  position: relative;
+  margin-top: 8px;
+}
+
+.block-group-label {
+  position: absolute;
+  top: -8px;
+  left: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.58rem;
+  padding: 1px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  background: var(--bg-panel);
+}
+
+.flow-block-group {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 12px 4px 6px;
+  border-radius: 5px;
+  border: 1px solid;
+  position: relative;
+  margin: 0 2px;
+}
+
+.flow-block-group-label {
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 0.56rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  background: var(--bg-panel);
+}
+
 @media (max-width: 1200px) {
   .main {
     grid-template-columns: 240px 1fr;

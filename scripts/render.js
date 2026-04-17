@@ -28,14 +28,40 @@ function renderFlowViz(activeIdx = -1, doneSet = new Set(), jumpedSet = new Set(
   start.innerHTML = `<div class="node-box ${startTheme}" style="width:48px;min-height:36px;font-size:0.65rem;border-radius:50%">${startLabel}</div>`;
   viz.appendChild(start);
 
+  let currentFlowBlockWrapper = null;
+  let prevFlowBlockId = null;
+
   displayOrder.forEach(rawIdx => {
     const i = restrictions.r2 ? (army.length - 1 - rawIdx) : rawIdx;
     const u = army[i];
+    const thisBlockId = u.blockId || null;
 
     const arr = document.createElement('div');
     arr.className = 'flow-arrow';
     arr.textContent = restrictions.r2 ? '←' : '→';
-    viz.appendChild(arr);
+
+    if (thisBlockId !== prevFlowBlockId) {
+      currentFlowBlockWrapper = null;
+      viz.appendChild(arr);
+      if (thisBlockId) {
+        const bc = blockColor(thisBlockId);
+        currentFlowBlockWrapper = document.createElement('div');
+        currentFlowBlockWrapper.className = 'flow-block-group';
+        currentFlowBlockWrapper.style.borderColor = bc.border;
+        currentFlowBlockWrapper.style.background = bc.bg;
+        const label = document.createElement('span');
+        label.className = 'flow-block-group-label';
+        label.style.color = bc.text;
+        label.style.borderLeft = `2px solid ${bc.border}`;
+        label.style.borderRight = `2px solid ${bc.border}`;
+        label.textContent = blockLabel(thisBlockId);
+        currentFlowBlockWrapper.appendChild(label);
+        viz.appendChild(currentFlowBlockWrapper);
+      }
+    } else {
+      (currentFlowBlockWrapper || viz).appendChild(arr);
+    }
+    prevFlowBlockId = thisBlockId;
 
     const node = document.createElement('div');
     node.className = 'flow-node';
@@ -99,7 +125,7 @@ function renderFlowViz(activeIdx = -1, doneSet = new Set(), jumpedSet = new Set(
       </div>
       <div class="flow-label">#${i + 1}${isJumped ? ' ⟶スキップ' : ''}${isDisabled ? ' ⚡停止' : ''}${u.blockId ? ` [${u.blockId}]` : ''}</div>
     `;
-    viz.appendChild(node);
+    (currentFlowBlockWrapper || viz).appendChild(node);
   });
 
   const arr2 = document.createElement('div');

@@ -354,7 +354,32 @@ function renderArmySlots() {
   const container = document.getElementById('armySlots');
   container.innerHTML = '';
 
+  let currentBlockWrapper = null;
+  let currentBlockIdInRender = null;
+
   army.forEach((u, i) => {
+    const thisBlockId = u.blockId || null;
+    if (thisBlockId !== currentBlockIdInRender) {
+      currentBlockIdInRender = thisBlockId;
+      if (thisBlockId) {
+        const bc = blockColor(thisBlockId);
+        currentBlockWrapper = document.createElement('div');
+        currentBlockWrapper.className = 'block-group';
+        currentBlockWrapper.style.borderColor = bc.border;
+        currentBlockWrapper.style.background = bc.bg;
+        const label = document.createElement('span');
+        label.className = 'block-group-label';
+        label.style.color = bc.text;
+        label.style.borderLeft = `2px solid ${bc.border}`;
+        label.style.borderRight = `2px solid ${bc.border}`;
+        label.textContent = blockLabel(thisBlockId);
+        currentBlockWrapper.appendChild(label);
+        container.appendChild(currentBlockWrapper);
+      } else {
+        currentBlockWrapper = null;
+      }
+    }
+
     const slot = document.createElement('div');
     slot.className = 'slot filled';
     slot.style.flexDirection = 'column';
@@ -505,7 +530,7 @@ function renderArmySlots() {
       }
     }
 
-    container.appendChild(slot);
+    (currentBlockWrapper || container).appendChild(slot);
   });
 
   document.getElementById('armyCount').textContent = `${army.length} / 10 体`;
