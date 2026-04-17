@@ -217,6 +217,111 @@ function updateCondNode(condId, key, value) {
   }
 }
 
+function addCondNodeAndOpen(blockId) {
+  addCondNode(blockId);
+  const created = condNodes.find(c => c.blockId === blockId);
+  if (created) openCondOverlay(created.id);
+}
+
+function openCondOverlay(condId) {
+  const cnd = condNodes.find(c => c.id === condId);
+  if (!cnd) return;
+  const box = document.getElementById('condOverlayBox');
+  if (!box) return;
+  const headColor = blockColor(cnd.blockId);
+  const varOptions = `
+    <option value="enemySpearCount" ${cnd.varType === 'enemySpearCount' ? 'selected' : ''}>敵槍兵の数</option>
+    <option value="enemyArcherCount" ${cnd.varType === 'enemyArcherCount' ? 'selected' : ''}>敵弓兵の数</option>
+    <option value="enemyCavalryCount" ${cnd.varType === 'enemyCavalryCount' ? 'selected' : ''}>敵騎馬兵の数</option>
+    <option value="enemyAtk" ${cnd.varType === 'enemyAtk' ? 'selected' : ''}>敵ATK合計</option>
+    <option value="enemyDef" ${cnd.varType === 'enemyDef' ? 'selected' : ''}>敵DEF合計</option>
+    <option value="enemyIntentAtk" ${cnd.varType === 'enemyIntentAtk' ? 'selected' : ''}>🔮 今ターン敵ATK予告</option>
+    <option value="myArcherAmmo" ${cnd.varType === 'myArcherAmmo' ? 'selected' : ''}>自軍弓兵残弾数</option>
+  `;
+  const blockOpts = sel => `
+    <option value="" ${!sel ? 'selected' : ''}>→ 分岐なし（通常フロー）</option>
+    <option value="end" ${sel === 'end' ? 'selected' : ''}>→ ENDへ</option>
+    <option value="A" ${sel === 'A' ? 'selected' : ''}>→ ブロックA</option>
+    <option value="B" ${sel === 'B' ? 'selected' : ''}>→ ブロックB</option>
+    <option value="C" ${sel === 'C' ? 'selected' : ''}>→ ブロックC</option>
+    <option value="D" ${sel === 'D' ? 'selected' : ''}>→ ブロックD</option>
+  `;
+  const hasSpear = army.some(unit => unit.blockId === cnd.blockId && unit.id === 'spear');
+  box.style.borderColor = headColor.border;
+  box.innerHTML = `
+    <div class="cond-overlay-header">
+      <span class="cond-overlay-title" style="color:${headColor.text};">⬡ ${blockLabel(cnd.blockId)}の前の条件ノード</span>
+      <button type="button" class="cond-overlay-close" onclick="closeCondOverlay()">閉じる</button>
+    </div>
+    <div style="font-size:0.7rem;color:var(--text-dim);line-height:1.5;">
+      フロー開始時に評価されます。条件式が TRUE / FALSE のときの分岐先をそれぞれ指定してください。
+    </div>
+    <div class="branch-row">
+      <label style="min-width:64px;">変数：</label>
+      <select class="branch-select" onchange="updateCondNode('${cnd.id}','varType',this.value)">
+        ${varOptions}
+      </select>
+    </div>
+    <div class="branch-row">
+      <label style="min-width:64px;">しきい値：</label>
+      <span style="color:var(--text-dim);">≥</span>
+      <input class="branch-input" type="number" min="0" max="999" value="${cnd.threshold}"
+        onchange="updateCondNode('${cnd.id}','threshold',parseInt(this.value)||0)">
+    </div>
+    <div class="branch-dest-row">
+      <span class="branch-true">TRUE：</span>
+      <select class="branch-select" onchange="updateCondNode('${cnd.id}','trueBlock',this.value||null)">
+        ${blockOpts(cnd.trueBlock)}
+      </select>
+    </div>
+    <div class="branch-dest-row">
+      <span class="branch-false">FALSE：</span>
+      <select class="branch-select" onchange="updateCondNode('${cnd.id}','falseBlock',this.value||null)">
+        ${blockOpts(cnd.falseBlock)}
+      </select>
+    </div>
+    ${hasSpear ? `
+      <div class="cond-overlay-section">
+        <div class="cond-overlay-section-title">⚔ 槍兵の能力切替（このブロック内）</div>
+        <div class="branch-dest-row">
+          <span class="branch-true">TRUE：</span>
+          <select class="branch-select" onchange="updateCondNode('${cnd.id}','trueSpearMode',this.value||null)">
+            <option value="" ${!cnd.trueSpearMode ? 'selected' : ''}>→ 変更なし</option>
+            <option value="core" ${cnd.trueSpearMode === 'core' ? 'selected' : ''}>→ コア（突撃）</option>
+            <option value="option" ${cnd.trueSpearMode === 'option' ? 'selected' : ''}>→ オプション（陣形）</option>
+          </select>
+        </div>
+        <div class="branch-dest-row">
+          <span class="branch-false">FALSE：</span>
+          <select class="branch-select" onchange="updateCondNode('${cnd.id}','falseSpearMode',this.value||null)">
+            <option value="" ${!cnd.falseSpearMode ? 'selected' : ''}>→ 変更なし</option>
+            <option value="core" ${cnd.falseSpearMode === 'core' ? 'selected' : ''}>→ コア（突撃）</option>
+            <option value="option" ${cnd.falseSpearMode === 'option' ? 'selected' : ''}>→ オプション（陣形）</option>
+          </select>
+        </div>
+      </div>
+    ` : ''}
+    <button type="button" class="cond-overlay-remove" onclick="removeCondNodeFromOverlay('${cnd.id}')">この条件ノードを削除</button>
+  `;
+  document.getElementById('condOverlay').classList.add('show');
+}
+
+function closeCondOverlay() {
+  const ov = document.getElementById('condOverlay');
+  if (ov) ov.classList.remove('show');
+}
+
+function onCondOverlayBackdropClick(event) {
+  if (event.target && event.target.id === 'condOverlay') {
+    closeCondOverlay();
+  }
+}
+
+function removeCondNodeFromOverlay(condId) {
+  removeCondNode(condId);
+  closeCondOverlay();
+}
+
 function shiftCondNodesAfterRemove(removedIdx) {
   const removedBlockId = army[removedIdx]?.blockId;
   if (removedBlockId) {
@@ -382,79 +487,20 @@ function renderArmySlots() {
       const headColor = blockColor(u.blockId);
       const existingCond = condNodes.find(c => c.blockId === u.blockId);
       if (existingCond) {
-        const cnd = existingCond;
-        const condUI = document.createElement('div');
-        condUI.className = 'branch-config';
-        condUI.style.cssText = `margin-bottom:6px;border-color:${headColor.border};background:rgba(22,160,133,0.07);`;
-        const varOptions = `
-          <option value="enemySpearCount" ${cnd.varType === 'enemySpearCount' ? 'selected' : ''}>敵槍兵の数</option>
-          <option value="enemyArcherCount" ${cnd.varType === 'enemyArcherCount' ? 'selected' : ''}>敵弓兵の数</option>
-          <option value="enemyCavalryCount" ${cnd.varType === 'enemyCavalryCount' ? 'selected' : ''}>敵騎馬兵の数</option>
-          <option value="enemyAtk" ${cnd.varType === 'enemyAtk' ? 'selected' : ''}>敵ATK合計</option>
-          <option value="enemyDef" ${cnd.varType === 'enemyDef' ? 'selected' : ''}>敵DEF合計</option>
-          <option value="enemyIntentAtk" ${cnd.varType === 'enemyIntentAtk' ? 'selected' : ''}>🔮 今ターン敵ATK予告</option>
-          <option value="myArcherAmmo" ${cnd.varType === 'myArcherAmmo' ? 'selected' : ''}>自軍弓兵残弾数</option>
+        const summary = document.createElement('div');
+        summary.className = 'cond-summary-row';
+        summary.style.borderColor = headColor.border;
+        summary.innerHTML = `
+          <span class="cond-summary-label" style="color:${headColor.text};">⬡ ${blockLabel(u.blockId)}の条件分岐</span>
+          <span class="cond-summary-status">設定あり</span>
+          <button type="button" class="cond-summary-edit" onclick="openCondOverlay('${existingCond.id}')">編集</button>
         `;
-        const blockOpts = sel => `
-          <option value="" ${!sel ? 'selected' : ''}>→ 分岐なし（通常フロー）</option>
-          <option value="end" ${sel === 'end' ? 'selected' : ''}>→ ENDへ</option>
-          <option value="A" ${sel === 'A' ? 'selected' : ''}>→ ブロックA</option>
-          <option value="B" ${sel === 'B' ? 'selected' : ''}>→ ブロックB</option>
-          <option value="C" ${sel === 'C' ? 'selected' : ''}>→ ブロックC</option>
-          <option value="D" ${sel === 'D' ? 'selected' : ''}>→ ブロックD</option>
-        `;
-        condUI.innerHTML = `
-          <div class="branch-config-title" style="color:${headColor.text};">⬡ 条件ノード（${blockLabel(u.blockId)}の前）
-            <span style="font-size:0.6rem;background:rgba(22,160,133,0.15);border:1px solid rgba(22,160,133,0.4);border-radius:3px;padding:1px 5px;margin-left:4px;color:var(--teal);">フロー開始時に評価</span>
-            <span onclick="removeCondNode('${cnd.id}')" style="float:right;cursor:pointer;color:var(--red-light);font-size:0.75rem;">✕</span>
-          </div>
-          <div class="branch-row">
-            <select class="branch-select" onchange="updateCondNode('${cnd.id}','varType',this.value)">
-              ${varOptions}
-            </select>
-            <label style="margin-left:4px;">≥</label>
-            <input class="branch-input" type="number" min="0" max="999" value="${cnd.threshold}"
-              onchange="updateCondNode('${cnd.id}','threshold',parseInt(this.value)||0)">
-          </div>
-          <div class="branch-dest-row">
-            <span class="branch-true">TRUE：</span>
-            <select class="branch-select" onchange="updateCondNode('${cnd.id}','trueBlock',this.value||null)">
-              ${blockOpts(cnd.trueBlock)}
-            </select>
-          </div>
-          <div class="branch-dest-row">
-            <span class="branch-false">FALSE：</span>
-            <select class="branch-select" onchange="updateCondNode('${cnd.id}','falseBlock',this.value||null)">
-              ${blockOpts(cnd.falseBlock)}
-            </select>
-          </div>
-          ${army.some(unit => unit.blockId === cnd.blockId && unit.id === 'spear') ? `
-          <div style="margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,200,50,0.2);">
-            <div style="font-size:0.6rem;color:var(--gold-dim);margin-bottom:4px;">⚔ 槍兵の能力切替（このブロック内）</div>
-            <div class="branch-dest-row">
-              <span class="branch-true">TRUE：</span>
-              <select class="branch-select" onchange="updateCondNode('${cnd.id}','trueSpearMode',this.value||null)">
-                <option value="" ${!cnd.trueSpearMode ? 'selected' : ''}>→ 変更なし</option>
-                <option value="core" ${cnd.trueSpearMode === 'core' ? 'selected' : ''}>→ コア（突撃）</option>
-                <option value="option" ${cnd.trueSpearMode === 'option' ? 'selected' : ''}>→ オプション（陣形）</option>
-              </select>
-            </div>
-            <div class="branch-dest-row">
-              <span class="branch-false">FALSE：</span>
-              <select class="branch-select" onchange="updateCondNode('${cnd.id}','falseSpearMode',this.value||null)">
-                <option value="" ${!cnd.falseSpearMode ? 'selected' : ''}>→ 変更なし</option>
-                <option value="core" ${cnd.falseSpearMode === 'core' ? 'selected' : ''}>→ コア（突撃）</option>
-                <option value="option" ${cnd.falseSpearMode === 'option' ? 'selected' : ''}>→ オプション（陣形）</option>
-              </select>
-            </div>
-          </div>` : ''}
-        `;
-        slot.insertBefore(condUI, slot.firstChild);
+        slot.insertBefore(summary, slot.firstChild);
       } else {
         const addCondBtn = document.createElement('button');
         addCondBtn.style.cssText = `display:block;width:100%;font-size:0.6rem;padding:2px 6px;border-radius:3px;border:1px dashed ${headColor.border};background:rgba(22,160,133,0.05);color:${headColor.text};cursor:pointer;margin-bottom:4px;text-align:center;`;
         addCondBtn.textContent = `⬡ ${blockLabel(u.blockId)}の前に条件分岐を追加`;
-        addCondBtn.onclick = () => addCondNode(u.blockId);
+        addCondBtn.onclick = () => addCondNodeAndOpen(u.blockId);
         slot.insertBefore(addCondBtn, slot.firstChild);
       }
     }
