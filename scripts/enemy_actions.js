@@ -22,9 +22,9 @@ const ENEMY_ACTION_PATTERNS = {
   // 新規追加アクションのテスト用
   event3: {
     'e1': [
-{ action: 'buff', value: ['cavalry', 'armor', 100, false] },  // 騎馬兵ATK+5、不在なら先頭
-{ action: 'atk', value: [8] },     // ターン1: 108ダメージ×1回
-
+{ action: 'volley', value: [3, 2] },                   // ランダム位置全体に3dmg×2射
+{ action: 'volley', value: [4, 1, 'rear'] } ,          // 後衛全体に4dmg×1射
+{ action: 'volley', value: [3, 2, 'front', false] },   // バフ無視の前衛全体斉射
     ],
   },  
 

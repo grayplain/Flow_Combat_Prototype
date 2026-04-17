@@ -65,8 +65,22 @@ const ACTION_HANDLERS = {
     return { type: 'targeted_atk', value: baseDmg + buffDelta, targetSpec, atkCount: count };
   },
 
-  // TBD: 弓兵斉射ダメージ
-  // volley: (enemy, values, battleState) => { ... },
+  // ---- 斉射：指定位置の全体にNダメージ×M射 ----
+  // value[0]: ダメージ（省略時は自身のatk）
+  // value[1]: 射数（省略時1）
+  // value[2]: 対象位置 'front' | 'rear' | 'random'（省略時 'random'）
+  //   対象位置不在時は全体代替にフォールバック
+  // value[3]: applyBuff フラグ（省略時 true）
+  //   true:  buff で上昇した ATK 差分を value[0] に上乗せする
+  //   false: buff にかかわらず value[0] の値をそのまま使う
+  volley: (enemy, values) => {
+    const baseDmg    = values[0] || enemy.atk;
+    const count      = values[1] || 1;
+    const targetPos  = values[2] ?? 'random';
+    const applyBuff  = values[3] ?? true;
+    const buffDelta  = applyBuff ? Math.max(0, enemy.atk - (enemy.baseAtk ?? enemy.atk)) : 0;
+    return { type: 'volley', value: baseDmg + buffDelta, atkCount: count, targetPos };
+  },
 
   // ---- バフ（敵ユニット強化）----
   // value[0]: 対象兵種（文字列: 'cavalry'など、数値: BUFF_TARGET_CODESのコード）

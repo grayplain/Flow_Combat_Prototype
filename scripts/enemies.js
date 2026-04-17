@@ -49,7 +49,17 @@ const ENEMY_FORMATIONS = {
       { id: 'e4', name: '敵重装騎馬兵B', maxHp: 60, hp: 60, atk: 5, armor: 2, position: 'rear', maxMorale: 5, morale: 5, unitType: 'cavalry' },
     ]
   },
-  enemy3: {
+  enemy2: {
+    label: '拠点2-1',
+    desc: '2番目の拠点の敵軍団その２',
+    hint: '味方ユニットを4~5体集めて何とか勝てる。フローを適切に組めば楽に勝てる敵の想定',
+    units: [
+      { id: 'e1', name: 'パヴィス盾兵', maxHp: 100, hp: 100, atk: 0, armor: 0, position: 'front', maxMorale: 8, morale: 8, unitType: 'shield' },
+      { id: 'e2', name: '傭兵弓兵', maxHp: 15, hp: 15, atk: 6, armor: 0, position: 'rear', maxMorale: 5, morale: 5, unitType: 'archer' },
+      { id: 'e2', name: 'ジェノバ弩兵', maxHp: 20, hp: 20, atk: 13, armor: 0, position: 'rear', maxMorale: 5, morale: 5, unitType: 'archer' },      
+    ]
+  },  
+  enemy4: {
     label: '拠点3',
     desc: 'ボス前の敵分断',
     hint: '味方ユニットを6~7体集めてフローを適切に組んで初めて勝てる想定。',

@@ -60,6 +60,19 @@ function renderEnemyIntents() {
         <span class="intent-action">狙い撃ち${atkCountLabel}（${targetLabel}）</span>
         <span class="intent-value">${totalDmg} ダメージ</span>
       `;
+    } else if (intent.type === 'volley') {
+      const atkCount = intent.atkCount || 1;
+      const totalDmg = intent.value * atkCount;
+      const atkCountLabel = atkCount > 1 ? `×${atkCount}射` : '';
+      const posLabel = intent.targetPos === 'front' ? '前衛'
+                     : intent.targetPos === 'rear'  ? '後衛'
+                     : 'ランダム';
+      item.innerHTML = `
+        <span class="intent-icon">🏹</span>
+        <span class="intent-name">${enemy.name}</span>
+        <span class="intent-action">斉射${atkCountLabel}（${posLabel}）</span>
+        <span class="intent-value">${totalDmg} ダメージ</span>
+      `;
     } else if (intent.type === 'buff') {
       const statLabel = { atk: 'ATK', armor: 'アーマー', hp: 'HP' }[intent.stat] || intent.stat;
       const specStr = typeof intent.targetSpec === 'number'

@@ -137,12 +137,13 @@ async function runTurn() {
   updateAmmoDisplay(battleState.archerAmmo || 0, battleState.crossbowAmmo || 0);
 
   generateEnemyIntents();
+  const ATK_INTENT_TYPES = new Set(['atk', 'targeted_atk', 'volley']);
   battleState.enemyIntentAtk = enemyIntents.reduce((s, i) =>
-    (i.type === 'atk' || i.type === 'targeted_atk') ? s + i.value * (i.atkCount || 1) : s, 0);
+    ATK_INTENT_TYPES.has(i.type) ? s + i.value * (i.atkCount || 1) : s, 0);
   renderEnemyIntents();
   const eidEl = document.getElementById('enemyIntentAtkDisplay');
   if (eidEl) eidEl.textContent = battleState.enemyIntentAtk;
-  addLog(`🔮 敵行動予告：合計ATK ${battleState.enemyIntentAtk}（${enemyIntents.filter(i => i.type === 'atk' || i.type === 'targeted_atk').length}体が攻撃予定）`, 'sys');
+  addLog(`🔮 敵行動予告：合計ATK ${battleState.enemyIntentAtk}（${enemyIntents.filter(i => ATK_INTENT_TYPES.has(i.type)).length}体が攻撃予定）`, 'sys');
 
   setPhaseLabel('自軍攻撃フェーズ', '#f0d080');
   addLog(`━━ ターン ${turnCount}：自軍攻撃フェーズ（補給${battleState.supply}・最大${MAX_LOOPS}ループ）━━`, 'sys');

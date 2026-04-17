@@ -253,9 +253,9 @@ async function applyEnemyAttack() {
 
   let totalDealt = 0;
 
-  // 通常攻撃を行わない敵ID（targeted_atk / buff は自前ループで処理するため除外）
+  // 通常攻撃を行わない敵ID（targeted_atk / buff / volley は自前ループで処理するため除外）
   const nonDefaultAtkIds = new Set(
-    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff').map(it => it.enemyId)
+    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff' || it.type === 'volley').map(it => it.enemyId)
   );
 
   const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer' && !nonDefaultAtkIds.has(e.id));
@@ -301,6 +301,60 @@ async function applyEnemyAttack() {
         }
       }
       if (archerTotalDealt > 0) totalDealt += archerTotalDealt;
+      renderMyUnits();
+    }
+  }
+
+  // ---- volley（斉射：単体敵の行動として、指定位置の全体に射数分ダメージ）----
+  for (const intent of enemyIntents.filter(it => it.type === 'volley')) {
+    const enemy = enemies.find(e => e.id === intent.enemyId);
+    if (!enemy || enemy.dead || enemy.fled) continue;
+
+    const atkCount = intent.atkCount || 1;
+    for (let hit = 1; hit <= atkCount; hit++) {
+      if (enemy.dead || enemy.fled) break;
+
+      const targetPos = intent.targetPos === 'random'
+        ? (Math.random() < 0.5 ? 'front' : 'rear')
+        : intent.targetPos;
+      const targetPosLabel = targetPos === 'front' ? '前衛' : '後衛';
+      const posTargets = myUnitsHp.filter((mu, idx) => !mu.dead && army[idx] && (army[idx].position || 'front') === targetPos);
+      const allAlive = myUnitsHp.filter(mu => !mu.dead);
+      const shotTargets = posTargets.length > 0 ? posTargets : allAlive;
+      const fallbackMsg = posTargets.length === 0 ? `【${targetPosLabel}不在→全体代替】` : '';
+      const hitLabel = atkCount > 1 ? `（${hit}/${atkCount}回目）` : '';
+      const hitDmg = intent.value;
+
+      addLog(`　🏹 ${enemy.name}【斉射】${fallbackMsg}${hitLabel}→ ${targetPosLabel}全体に${hitDmg}ダメージ`, 'atk');
+
+      let volleyTotalDealt = 0;
+      for (const mu of shotTargets) {
+        if (mu.dead) continue;
+        let dmg = hitDmg;
+        if (battleState.shield > 0) {
+          const absorbed = Math.min(battleState.shield, dmg);
+          battleState.shield -= absorbed;
+          dmg -= absorbed;
+          addLog(`　　🛡 シールドが ${absorbed} 吸収（残シールド：${battleState.shield}）`, 'def');
+          updateShieldDisplay(battleState.shield);
+        }
+        if (dmg <= 0) {
+          addLog(`　　${mu.name}：シールドが完全防御`, 'def');
+          continue;
+        }
+        const armorVal = mu.armor || 0;
+        const actualDmg = Math.max(0, dmg - armorVal);
+        if (armorVal > 0) addLog(`　　🛡 ${mu.name}【アーマー${armorVal}】軽減`, 'def');
+        mu.hp = Math.max(0, mu.hp - actualDmg);
+        volleyTotalDealt += actualDmg;
+        const deadMsg = mu.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${mu.hp}`;
+        addLog(`　　→ ${mu.name}：${actualDmg}ダメージ${deadMsg}`, 'atk');
+        if (mu.hp <= 0) {
+          mu.dead = true;
+          renderMyUnits();
+        }
+      }
+      if (volleyTotalDealt > 0) totalDealt += volleyTotalDealt;
       renderMyUnits();
     }
   }
