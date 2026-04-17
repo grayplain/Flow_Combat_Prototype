@@ -264,6 +264,44 @@ header p {
   align-items: center;
   gap: 8px;
   transition: all 0.15s;
+  position: relative;
+}
+
+.slot.drop-before::before,
+.slot.drop-after::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  background: var(--gold-bright);
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(240, 208, 128, 0.6);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.slot.drop-before::before {
+  top: -4px;
+}
+
+.slot.drop-after::after {
+  bottom: -4px;
+}
+
+.block-group.drop-into {
+  box-shadow: 0 0 0 2px var(--gold-bright), 0 0 10px rgba(240, 208, 128, 0.45);
+}
+
+.army-slots.drop-end::after {
+  content: '';
+  display: block;
+  height: 3px;
+  background: var(--gold-bright);
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(240, 208, 128, 0.6);
+  margin-top: 2px;
+  pointer-events: none;
 }
 
 .slot.filled {

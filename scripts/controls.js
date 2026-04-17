@@ -350,9 +350,130 @@ function blockColor(blockId) {
 
 let dragIdx = null;
 
+function getDropZone(e, slot) {
+  const rect = slot.getBoundingClientRect();
+  const ratio = (e.clientY - rect.top) / rect.height;
+  if (ratio < 0.2) return 'upper';
+  if (ratio > 0.8) return 'lower';
+  return 'middle';
+}
+
+function resolveDropAction(srcIdx, destIdx, zone) {
+  if (srcIdx === null || srcIdx === destIdx) return null;
+  const srcB = army[srcIdx] ? (army[srcIdx].blockId || null) : null;
+  const destB = army[destIdx] ? (army[destIdx].blockId || null) : null;
+
+  if (destB && destB !== srcB) {
+    return { type: 'endOfBlock', blockId: destB };
+  }
+
+  if (zone === 'middle') return null;
+
+  return {
+    type: 'relative',
+    destIdx,
+    position: zone === 'upper' ? 'before' : 'after',
+    newBlockId: destB,
+  };
+}
+
+function applyDropIndicator(slot, action) {
+  if (!action) return;
+  if (action.type === 'relative') {
+    slot.classList.add(action.position === 'before' ? 'drop-before' : 'drop-after');
+  } else if (action.type === 'endOfBlock') {
+    const wrapper = slot.closest('.block-group');
+    if (wrapper) wrapper.classList.add('drop-into');
+  }
+}
+
+function clearDropIndicators() {
+  document.querySelectorAll('.slot.drop-before, .slot.drop-after').forEach(el => {
+    el.classList.remove('drop-before', 'drop-after');
+  });
+  document.querySelectorAll('.block-group.drop-into').forEach(el => {
+    el.classList.remove('drop-into');
+  });
+  const c = document.getElementById('armySlots');
+  if (c) c.classList.remove('drop-end');
+}
+
+function executeDropAction(srcIdx, action) {
+  if (!action || srcIdx === null) return;
+  if (action.type === 'relative') {
+    moveUnitRelative(srcIdx, action.destIdx, action.position, action.newBlockId);
+  } else if (action.type === 'endOfBlock') {
+    moveUnitToEndOfBlock(srcIdx, action.blockId);
+  }
+}
+
+function moveUnitRelative(srcIdx, destIdx, position, newBlockId) {
+  const [item] = army.splice(srcIdx, 1);
+  item.blockId = newBlockId;
+  let insertAt;
+  if (position === 'before') {
+    insertAt = srcIdx < destIdx ? destIdx - 1 : destIdx;
+  } else {
+    insertAt = srcIdx < destIdx ? destIdx : destIdx + 1;
+  }
+  army.splice(insertAt, 0, item);
+  cleanupEmptyBlocks();
+  renderAll();
+}
+
+function moveUnitToEndOfBlock(srcIdx, blockId) {
+  const [item] = army.splice(srcIdx, 1);
+  item.blockId = blockId;
+  let insertAt = army.length;
+  for (let i = army.length - 1; i >= 0; i--) {
+    if (army[i].blockId === blockId) {
+      insertAt = i + 1;
+      break;
+    }
+  }
+  army.splice(insertAt, 0, item);
+  cleanupEmptyBlocks();
+  renderAll();
+}
+
+function moveUnitToEnd(srcIdx) {
+  const [item] = army.splice(srcIdx, 1);
+  item.blockId = null;
+  army.push(item);
+  cleanupEmptyBlocks();
+  renderAll();
+}
+
+function cleanupEmptyBlocks() {
+  condNodes = condNodes.filter(c => army.some(u => u.blockId === c.blockId));
+}
+
 function renderArmySlots() {
   const container = document.getElementById('armySlots');
   container.innerHTML = '';
+
+  if (!container._dragBound) {
+    container._dragBound = true;
+    container.addEventListener('dragover', e => {
+      if (dragIdx === null) return;
+      if (e.target !== container) return;
+      e.preventDefault();
+      clearDropIndicators();
+      container.classList.add('drop-end');
+    });
+    container.addEventListener('dragleave', e => {
+      if (container.contains(e.relatedTarget)) return;
+      clearDropIndicators();
+    });
+    container.addEventListener('drop', e => {
+      if (e.target !== container) return;
+      e.preventDefault();
+      const src = dragIdx;
+      clearDropIndicators();
+      dragIdx = null;
+      if (src !== null) moveUnitToEnd(src);
+    });
+  }
 
   let currentBlockWrapper = null;
   let currentBlockIdInRender = null;
@@ -404,26 +525,32 @@ function renderArmySlots() {
     mainRow.addEventListener('dragstart', e => {
       dragIdx = i;
       mainRow.style.opacity = '0.4';
+      if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
       e.stopPropagation();
     });
     mainRow.addEventListener('dragend', () => {
       dragIdx = null;
       mainRow.style.opacity = '1';
+      clearDropIndicators();
     });
     slot.addEventListener('dragover', e => {
+      if (dragIdx === null) return;
       e.preventDefault();
-      slot.classList.add('drag-over');
+      e.stopPropagation();
+      const zone = getDropZone(e, slot);
+      const action = resolveDropAction(dragIdx, i, zone);
+      clearDropIndicators();
+      applyDropIndicator(slot, action);
     });
-    slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
     slot.addEventListener('drop', e => {
       e.preventDefault();
-      slot.classList.remove('drag-over');
-      if (dragIdx !== null && dragIdx !== i) {
-        const tmp = army[dragIdx];
-        army[dragIdx] = army[i];
-        army[i] = tmp;
-        renderAll();
-      }
+      e.stopPropagation();
+      const zone = getDropZone(e, slot);
+      const action = resolveDropAction(dragIdx, i, zone);
+      const src = dragIdx;
+      clearDropIndicators();
+      dragIdx = null;
+      executeDropAction(src, action);
     });
 
     slot.appendChild(mainRow);
