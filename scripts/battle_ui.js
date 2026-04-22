@@ -73,6 +73,14 @@ function renderEnemyIntents() {
         <span class="intent-action">斉射${atkCountLabel}（${posLabel}）</span>
         <span class="intent-value">${totalDmg} ダメージ</span>
       `;
+    } else if (intent.type === 'armor_break') {
+      const posLabel = intent.targetSpec === 'front' ? '前衛' : '最大アーマー';
+      item.innerHTML = `
+        <span class="intent-icon">🔨</span>
+        <span class="intent-name">${enemy.name}</span>
+        <span class="intent-action">アーマー削り（${posLabel}）</span>
+        <span class="intent-value">アーマー -${intent.armorShred} / ${intent.value}ダメージ</span>
+      `;
     } else if (intent.type === 'noop') {
       item.innerHTML = `
         <span class="intent-icon">⏸</span>

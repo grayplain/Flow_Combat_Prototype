@@ -37,7 +37,7 @@ const ENEMY_ACTION_PATTERNS = {
   // 拠点3
   enemy3: {
     'e2': [
-{ action: 'volley', value: [4, 2, 'front'] }, 
+    { action: 'volley', value: [4, 2, 'front'] }, 
     ],
     'e3': [
     { action: 'noop', value: [] },
@@ -45,6 +45,13 @@ const ENEMY_ACTION_PATTERNS = {
     ],
     
   },  
+  
+  // 新規追加アクションのテスト用
+  experi: {
+    'e1': [
+      { action: 'armor_break', value: [2,2] },
+    ],        
+  },    
   
 
 };

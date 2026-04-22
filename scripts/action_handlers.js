@@ -97,6 +97,19 @@ const ACTION_HANDLERS = {
     return { type: 'buff', targetSpec, stat, value: amount, strict };
   },
 
+  // ---- アーマー削り攻撃：アーマー削減 → ダメージ ----
+  // value[0]: 削るアーマー値（削減後のアーマーは0未満にならない）
+  // value[1]: ダメージ（省略時は自身のatk）
+  // value[2]: 対象 'max_armor' | 'front'（省略時 'max_armor'。'max_armor'で全員アーマー0のときは front にフォールバック）
+  // 攻撃回数は常に1回。バフで上昇した ATK 差分はダメージに自動加算。
+  armor_break: (enemy, values) => {
+    const armorShred = Math.max(0, values[0] || 0);
+    const baseDmg    = values[1] || enemy.atk;
+    const targetSpec = values[2] ?? 'max_armor';
+    const buffDelta  = Math.max(0, enemy.atk - (enemy.baseAtk ?? enemy.atk));
+    return { type: 'armor_break', armorShred, value: baseDmg + buffDelta, targetSpec };
+  },
+
   // ---- 待機：何もしない ----
   // パラメータなし。通常攻撃もスキップされる。
   noop: () => {

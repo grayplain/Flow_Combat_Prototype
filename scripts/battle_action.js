@@ -253,9 +253,12 @@ async function applyEnemyAttack() {
 
   let totalDealt = 0;
 
-  // 通常攻撃を行わない敵ID（targeted_atk / buff / volley / noop は自前ループで処理するため除外）
+  // 通常攻撃を行わない敵ID（targeted_atk / buff / volley / noop / armor_break は自前ループで処理するため除外）
   const nonDefaultAtkIds = new Set(
-    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff' || it.type === 'volley' || it.type === 'noop').map(it => it.enemyId)
+    enemyIntents.filter(it =>
+      it.type === 'targeted_atk' || it.type === 'buff' || it.type === 'volley' ||
+      it.type === 'noop' || it.type === 'armor_break'
+    ).map(it => it.enemyId)
   );
 
   const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer' && !nonDefaultAtkIds.has(e.id));
@@ -488,6 +491,94 @@ async function applyEnemyAttack() {
         }
       }
     }
+  }
+
+  // ---- armor_break（アーマー削り → 単発ダメージ）----
+  for (const intent of enemyIntents.filter(it => it.type === 'armor_break')) {
+    const enemy = enemies.find(e => e.id === intent.enemyId);
+    if (!enemy || enemy.dead || enemy.fled) continue;
+
+    const alive = myUnitsHp.filter(mu => !mu.dead);
+    if (alive.length === 0) continue;
+
+    // 対象選択：'max_armor'は最大アーマー、全員0なら front にフォールバック。'front' は前衛最前列
+    const pickFront = () => {
+      const front = alive.find(mu => {
+        const idx = myUnitsHp.indexOf(mu);
+        return army[idx] && (army[idx].position || 'front') === 'front';
+      });
+      return front || alive[0];
+    };
+
+    let target;
+    if (intent.targetSpec === 'front') {
+      target = pickFront();
+    } else { // 'max_armor'
+      const sorted = alive.slice().sort((a, b) => (b.armor || 0) - (a.armor || 0));
+      const maxArmor = sorted[0].armor || 0;
+      target = maxArmor > 0 ? sorted[0] : pickFront();
+    }
+    if (!target) continue;
+
+    // アーマー削り
+    const prevArmor = target.armor || 0;
+    const newArmor = Math.max(0, prevArmor - intent.armorShred);
+    const actualShred = prevArmor - newArmor;
+    target.armor = newArmor;
+    if (actualShred > 0) {
+      addLog(`　🔨 ${enemy.name}【アーマー削り】→ ${target.name}：アーマー -${actualShred}（${prevArmor} → ${newArmor}）`, 'atk');
+    } else {
+      addLog(`　🔨 ${enemy.name}【アーマー削り】→ ${target.name}：アーマー既に0 → 効果なし`, 'atk');
+    }
+
+    // ダメージ処理（削った後のアーマーで軽減）
+    let dmg = intent.value;
+    if (battleState.shield > 0) {
+      const absorbed = Math.min(battleState.shield, dmg);
+      battleState.shield -= absorbed;
+      dmg -= absorbed;
+      addLog(`　🛡 シールドが ${absorbed} 吸収（${enemy.name}の攻撃、残シールド：${battleState.shield}）`, 'def');
+      updateShieldDisplay(battleState.shield);
+    }
+
+    if (dmg <= 0) {
+      addLog(`　⚔ ${enemy.name} → ${target.name}：シールドが完全防御`, 'def');
+      renderMyUnits();
+      continue;
+    }
+
+    const armorVal = target.armor || 0;
+    const actualDmg = Math.max(0, dmg - armorVal);
+    if (armorVal > 0) addLog(`　🛡 ${target.name}【アーマー${armorVal}】ダメージ軽減`, 'def');
+
+    target.hp = Math.max(0, target.hp - actualDmg);
+    totalDealt += actualDmg;
+
+    const deadMsg = target.hp <= 0 ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
+    addLog(`　⚔ ${enemy.name} → ${target.name}：${actualDmg}ダメージ${deadMsg}`, 'atk');
+
+    if (target.hp <= 0) {
+      target.dead = true;
+      renderMyUnits();
+    }
+
+    // 近接反撃（敵が近接系ユニットの場合のみ）
+    if (ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
+      const retConf = MELEE_RETALIATION[target.id];
+      if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
+        const armorEnemy = enemy.armor || 0;
+        const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
+        if (retDmg > 0) {
+          enemy.hp = Math.max(0, enemy.hp - retDmg);
+          if (enemy.hp <= 0) enemy.dead = true;
+          const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
+          const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
+          addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
+          renderEnemies();
+        }
+      }
+    }
+    renderMyUnits();
   }
 
   battleState.tauntUnitIdx = null;

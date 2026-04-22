@@ -137,7 +137,7 @@ async function runTurn() {
   updateAmmoDisplay(battleState.archerAmmo || 0, battleState.crossbowAmmo || 0);
 
   generateEnemyIntents();
-  const ATK_INTENT_TYPES = new Set(['atk', 'targeted_atk', 'volley']);
+  const ATK_INTENT_TYPES = new Set(['atk', 'targeted_atk', 'volley', 'armor_break']);
   battleState.enemyIntentAtk = enemyIntents.reduce((s, i) =>
     ATK_INTENT_TYPES.has(i.type) ? s + i.value * (i.atkCount || 1) : s, 0);
   renderEnemyIntents();
