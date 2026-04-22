@@ -73,6 +73,13 @@ function renderEnemyIntents() {
         <span class="intent-action">斉射${atkCountLabel}（${posLabel}）</span>
         <span class="intent-value">${totalDmg} ダメージ</span>
       `;
+    } else if (intent.type === 'noop') {
+      item.innerHTML = `
+        <span class="intent-icon">⏸</span>
+        <span class="intent-name">${enemy.name}</span>
+        <span class="intent-action">待機</span>
+        <span class="intent-value">—</span>
+      `;
     } else if (intent.type === 'buff') {
       const statLabel = { atk: 'ATK', armor: 'アーマー', hp: 'HP' }[intent.stat] || intent.stat;
       const specStr = typeof intent.targetSpec === 'number'

@@ -22,11 +22,30 @@ const ENEMY_ACTION_PATTERNS = {
   // 新規追加アクションのテスト用
   event3: {
     'e1': [
-{ action: 'volley', value: [3, 2] },                   // ランダム位置全体に3dmg×2射
-{ action: 'volley', value: [4, 1, 'rear'] } ,          // 後衛全体に4dmg×1射
-{ action: 'volley', value: [3, 2, 'front', false] },   // バフ無視の前衛全体斉射
+      { action: 'atk', value: [3,2] },
+      { action: 'def', value: [4] },
     ],
+    'e2': [
+    { action: 'noop', value: [] },
+    { action: 'targeted_atk', value: [12, 'min_hp'] },
+    ],
+    'e3': [
+      { action: 'atk', value: [7] },
+    ],           
   },  
+  
+  // 拠点3
+  enemy3: {
+    'e2': [
+{ action: 'volley', value: [4, 2, 'front'] }, 
+    ],
+    'e3': [
+    { action: 'noop', value: [] },
+    { action: 'targeted_atk', value: [20, 'min_hp'] },
+    ],
+    
+  },  
+  
 
 };
 

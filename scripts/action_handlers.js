@@ -97,6 +97,9 @@ const ACTION_HANDLERS = {
     return { type: 'buff', targetSpec, stat, value: amount, strict };
   },
 
-  // TBD: 行動なし（待機）
-  // noop: (enemy, values, battleState) => { return { type: 'noop', value: 0 }; },
+  // ---- 待機：何もしない ----
+  // パラメータなし。通常攻撃もスキップされる。
+  noop: () => {
+    return { type: 'noop', value: 0 };
+  },
 };

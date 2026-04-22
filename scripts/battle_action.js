@@ -253,9 +253,9 @@ async function applyEnemyAttack() {
 
   let totalDealt = 0;
 
-  // 通常攻撃を行わない敵ID（targeted_atk / buff / volley は自前ループで処理するため除外）
+  // 通常攻撃を行わない敵ID（targeted_atk / buff / volley / noop は自前ループで処理するため除外）
   const nonDefaultAtkIds = new Set(
-    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff' || it.type === 'volley').map(it => it.enemyId)
+    enemyIntents.filter(it => it.type === 'targeted_atk' || it.type === 'buff' || it.type === 'volley' || it.type === 'noop').map(it => it.enemyId)
   );
 
   const aliveEnemyArchers = enemies.filter(e => !e.dead && !e.fled && e.unitType === 'archer' && !nonDefaultAtkIds.has(e.id));
