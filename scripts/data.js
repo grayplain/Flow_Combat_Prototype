@@ -1,7 +1,7 @@
 // ===== ユニット定義 =====
 const UNITS = [
   {
-    id: 'spear', name: '槍兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 1, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    id: 'spear', name: '槍兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 2, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
     core: '前衛1体に即時6ダメージ（先頭の前衛槍兵のみ：前衛槍兵3体で+2）',
     option: '陣形：DEF+5',
     execute: (state, _i, _a, enemies) => {
@@ -42,7 +42,7 @@ const UNITS = [
     }
   },
   {
-    id: 'heavy', name: '重装歩兵', cost: 2, supplyCost: 1, maxHp: 40, armor: 2, theme: 'ctrl', tag: 'tag-atk', tagLabel: '破砕',
+    id: 'heavy', name: '重装歩兵', cost: 2, supplyCost: 1, maxHp: 40, armor: 3, theme: 'ctrl', tag: 'tag-atk', tagLabel: '破砕',
     core: 'アーマー破砕：即時7ダメ＋敵前衛アーマー-1（永続）',
     option: '盾壁：DEF+4・次の敵ターン攻撃を自身に集中',
     execute: (state, _i, _a, enemies) => {
@@ -107,7 +107,7 @@ const UNITS = [
     }
   },
   {
-    id: 'spear_knight', name: '槍騎士', cost: 2, supplyCost: 1, maxHp: 40, armor: 2, theme: 'atk', tag: 'tag-atk', tagLabel: '精鋭攻撃',
+    id: 'spear_knight', name: '槍騎士', cost: 2, supplyCost: 1, maxHp: 40, armor: 3, theme: 'atk', tag: 'tag-atk', tagLabel: '精鋭攻撃',
     core: '前衛1体に即時9ダメージ（アーマー1・精鋭枠）',
     option: '陣形：DEF+4',
     isKnightRank: true,
@@ -132,7 +132,7 @@ const UNITS = [
     }
   },
   {
-    id: 'heavy_knight', name: '重装騎士', cost: 3, supplyCost: 1, maxHp: 52, armor: 2, theme: 'ctrl', tag: 'tag-atk', tagLabel: '強化持越',
+    id: 'heavy_knight', name: '重装騎士', cost: 3, supplyCost: 1, maxHp: 52, armor: 4, theme: 'ctrl', tag: 'tag-atk', tagLabel: '強化持越',
     core: '蓄積ATK/DEFに+3上乗せして次ループへ持越し（アーマー1・精鋭枠）',
     option: 'アーマー破砕：前衛1体に即時3ダメージ＋アーマー-1',
     isKnightRank: true,
@@ -165,7 +165,7 @@ const UNITS = [
     }
   },
   {
-    id: 'cavalry_knight', name: '騎士', cost: 3, supplyCost: 1, maxHp: 40, armor: 2, theme: 'amp', tag: 'tag-amp', tagLabel: '重騎士突撃',
+    id: 'cavalry_knight', name: '騎士', cost: 3, supplyCost: 1, maxHp: 40, armor: 4, theme: 'amp', tag: 'tag-amp', tagLabel: '重騎士突撃',
     core: 'ATK+9・士気攻撃-5（先制攻撃・アーマー1・精鋭枠）',
     option: '跳躍：ATK+2、次ノードをスキップ',
     isKnightRank: true,

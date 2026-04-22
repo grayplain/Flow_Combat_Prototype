@@ -6,8 +6,8 @@ const ENEMY_FORMATIONS = {
     desc: 'Act1の序盤の襲撃イベント',
     hint: '槍兵を1~2体と民兵を置いておくだけで勝てる敵の想定',
     units: [
-      { id: 'e1', name: '盗賊1', maxHp: 15, hp: 15, atk: 6, armor: 0, position: 'front', maxMorale: 3, morale: 3, unitType: 'none' },
-      { id: 'e2', name: '盗賊2', maxHp: 35, hp: 35, atk: 6, armor: 0, position: 'front', maxMorale: 3, morale: 3, unitType: 'none' },
+      { id: 'e1', name: '盗賊1', maxHp: 15, hp: 15, atk: 5, armor: 0, position: 'front', maxMorale: 3, morale: 3, unitType: 'none' },
+      { id: 'e2', name: '盗賊2', maxHp: 35, hp: 35, atk: 4, armor: 0, position: 'front', maxMorale: 3, morale: 3, unitType: 'none' },
       { id: 'e3', name: '盗賊3', maxHp: 20, hp: 20, atk: 4, armor: 0, position: 'front', maxMorale: 3, morale: 3, unitType: 'none' },
     ]
   },
@@ -16,7 +16,7 @@ const ENEMY_FORMATIONS = {
     desc: 'Act1の中盤の襲撃イベント',
     hint: '味方ユニットを3〜４体置いておけば勝てる敵の想定',
     units: [
-      { id: 'e1', name: '逃亡騎士', maxHp: 100, hp: 100, atk: 10, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
+      { id: 'e1', name: '逃亡騎士', maxHp: 80, hp: 100, atk: 10, armor: 2, position: 'front', maxMorale: 8, morale: 8, unitType: 'knight' },
     ]
   },
   event3: {
@@ -46,7 +46,7 @@ const ENEMY_FORMATIONS = {
     units: [
       { id: 'e1', name: '守備弓兵A', maxHp: 15, hp: 15, atk: 6, armor: 0, position: 'front', maxMorale: 5, morale: 5, unitType: 'archer' },
       { id: 'e2', name: '守備弓兵B', maxHp: 15, hp: 15, atk: 6, armor: 0, position: 'front', maxMorale: 5, morale: 5, unitType: 'archer' },
-      { id: 'e3', name: '敵槍兵B', maxHp: 80, hp: 80, atk: 5, armor: 0, position: 'rear', maxMorale: 8, morale: 8, unitType: 'spear' },
+      { id: 'e3', name: '敵槍兵B', maxHp: 80, hp: 80, atk: 5, armor: 1, position: 'rear', maxMorale: 8, morale: 8, unitType: 'spear' },
     ]
   },
   enemy2: {
@@ -65,9 +65,9 @@ const ENEMY_FORMATIONS = {
     desc: '2番目の拠点の敵軍団その２',
     hint: '味方ユニットを4~5体集めて何とか勝てる。フローを適切に組めば楽に勝てる敵の想定',
     units: [
-      { id: 'e1', name: 'パヴィス盾兵', maxHp: 100, hp: 100, atk: 0, armor: 0, position: 'front', maxMorale: 8, morale: 8, unitType: 'shield' },
+      { id: 'e1', name: 'パヴィス盾兵', maxHp: 100, hp: 100, atk: 0, armor: 1, position: 'front', maxMorale: 8, morale: 8, unitType: 'shield' },
       { id: 'e2', name: '傭兵弓兵', maxHp: 15, hp: 15, atk: 6, armor: 0, position: 'rear', maxMorale: 5, morale: 5, unitType: 'archer' },
-      { id: 'e3', name: 'ジェノバ弩兵', maxHp: 20, hp: 20, atk: 13, armor: 0, position: 'rear', maxMorale: 5, morale: 5, unitType: 'crowwbowman' },      
+      { id: 'e3', name: 'ジェノバ弩兵', maxHp: 20, hp: 20, atk: 13, armor: 1, position: 'rear', maxMorale: 5, morale: 5, unitType: 'crowwbowman' },      
     ]
   },  
   enemy4: {
