@@ -26,10 +26,8 @@ function startBattle() {
   updateEnemyShieldDisplay(0);
   const eidElReset = document.getElementById('enemyIntentAtkDisplay');
   if (eidElReset) eidElReset.textContent = '—';
-  const UNIT_ARMOR = { spear: 1, crossbow: 1, heavy: 2, spear_knight: 2, heavy_knight: 2, cavalry_knight: 2 };
   myUnitsHp = army.map(u => {
-    const armor = UNIT_ARMOR[u.id] || 0;
-    return { ...u, hp: u.maxHp || 12, maxHp: u.maxHp || 12, armor, dead: false, crossbowLoaded: false };
+    return { ...u, hp: u.maxHp || 12, maxHp: u.maxHp || 12, armor: u.armor || 0, dead: false, crossbowLoaded: false };
   });
 
   disabledNodeIdx = -1;

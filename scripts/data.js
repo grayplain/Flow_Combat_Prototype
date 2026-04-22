@@ -1,7 +1,7 @@
 // ===== ユニット定義 =====
 const UNITS = [
   {
-    id: 'spear', name: '槍兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    id: 'spear', name: '槍兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 1, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
     core: '前衛1体に即時6ダメージ（先頭の前衛槍兵のみ：前衛槍兵3体で+2）',
     option: '陣形：DEF+5',
     execute: (state, _i, _a, enemies) => {
@@ -42,7 +42,7 @@ const UNITS = [
     }
   },
   {
-    id: 'heavy', name: '重装歩兵', cost: 2, supplyCost: 1, maxHp: 40, theme: 'ctrl', tag: 'tag-atk', tagLabel: '破砕',
+    id: 'heavy', name: '重装歩兵', cost: 2, supplyCost: 1, maxHp: 40, armor: 2, theme: 'ctrl', tag: 'tag-atk', tagLabel: '破砕',
     core: 'アーマー破砕：即時7ダメ＋敵前衛アーマー-1（永続）',
     option: '盾壁：DEF+4・次の敵ターン攻撃を自身に集中',
     execute: (state, _i, _a, enemies) => {
@@ -68,7 +68,7 @@ const UNITS = [
     }
   },
   {
-    id: 'cavalry', name: '騎馬兵', cost: 2, supplyCost: 1, maxHp: 28, theme: 'amp', tag: 'tag-amp', tagLabel: '突撃',
+    id: 'cavalry', name: '騎馬兵', cost: 2, supplyCost: 1, maxHp: 28, armor: 0, theme: 'amp', tag: 'tag-amp', tagLabel: '突撃',
     core: 'ATK+6・最後尾ユニットへ追加ダメージ（後方撹乱）',
     option: '射撃牽制：ATK+4、敵弓兵／弩兵の次ターンATK-3',
     execute: (state, _i, _a, enemies) => {
@@ -92,7 +92,7 @@ const UNITS = [
     }
   },
   {
-    id: 'banner', name: '軍旗手', cost: 1, supplyCost: 1, maxHp: 20, theme: 'amp', tag: 'tag-amp', tagLabel: '鼓舞',
+    id: 'banner', name: '軍旗手', cost: 1, supplyCost: 1, maxHp: 20, armor: 0, theme: 'amp', tag: 'tag-amp', tagLabel: '鼓舞',
     core: '隣接ノードの出力値+2上乗せ',
     option: null,
     execute: (state, idx, army) => {
@@ -107,7 +107,7 @@ const UNITS = [
     }
   },
   {
-    id: 'spear_knight', name: '槍騎士', cost: 2, supplyCost: 1, maxHp: 40, theme: 'atk', tag: 'tag-atk', tagLabel: '精鋭攻撃',
+    id: 'spear_knight', name: '槍騎士', cost: 2, supplyCost: 1, maxHp: 40, armor: 2, theme: 'atk', tag: 'tag-atk', tagLabel: '精鋭攻撃',
     core: '前衛1体に即時9ダメージ（アーマー1・精鋭枠）',
     option: '陣形：DEF+4',
     isKnightRank: true,
@@ -132,7 +132,7 @@ const UNITS = [
     }
   },
   {
-    id: 'heavy_knight', name: '重装騎士', cost: 3, supplyCost: 1, maxHp: 52, theme: 'ctrl', tag: 'tag-atk', tagLabel: '強化持越',
+    id: 'heavy_knight', name: '重装騎士', cost: 3, supplyCost: 1, maxHp: 52, armor: 2, theme: 'ctrl', tag: 'tag-atk', tagLabel: '強化持越',
     core: '蓄積ATK/DEFに+3上乗せして次ループへ持越し（アーマー1・精鋭枠）',
     option: 'アーマー破砕：前衛1体に即時3ダメージ＋アーマー-1',
     isKnightRank: true,
@@ -165,7 +165,7 @@ const UNITS = [
     }
   },
   {
-    id: 'cavalry_knight', name: '騎士', cost: 3, supplyCost: 1, maxHp: 40, theme: 'amp', tag: 'tag-amp', tagLabel: '重騎士突撃',
+    id: 'cavalry_knight', name: '騎士', cost: 3, supplyCost: 1, maxHp: 40, armor: 2, theme: 'amp', tag: 'tag-amp', tagLabel: '重騎士突撃',
     core: 'ATK+9・士気攻撃-5（先制攻撃・アーマー1・精鋭枠）',
     option: '跳躍：ATK+2、次ノードをスキップ',
     isKnightRank: true,
@@ -185,7 +185,7 @@ const UNITS = [
     }
   },
   {
-    id: 'archer', name: '弓兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
+    id: 'archer', name: '弓兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 0, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
     core: '後衛全体に3ダメージ×2射（残弾制限：弓兵1体あたり5回/戦闘）',
     option: '略奪：ATK+1、補給+1',
     execute: (state, _i, _a, enemies, unit) => {
@@ -243,7 +243,7 @@ const UNITS = [
     }
   },
   {
-    id: 'crossbow', name: '弩兵', cost: 1, supplyCost: 1, maxHp: 20, theme: 'atk', tag: 'tag-atk', tagLabel: '精密射撃',
+    id: 'crossbow', name: '弩兵', cost: 1, supplyCost: 1, maxHp: 20, armor: 1, theme: 'atk', tag: 'tag-atk', tagLabel: '精密射撃',
     core: '①装填→②発射：敵兵種指定・即時14ダメージ（アーマー貫通、残弾制限：1体あたり5回/戦闘）',
     option: '貫通射撃：シールド無視で即時3ダメージ',
     crossbowTarget: 'spear',
@@ -307,7 +307,7 @@ const UNITS = [
     }
   },
   {
-    id: 'engineer', name: '補給兵', cost: 1, supplyCost: 1, maxHp: 16, theme: 'sup', tag: 'tag-sup', tagLabel: '補給',
+    id: 'engineer', name: '補給兵', cost: 1, supplyCost: 1, maxHp: 16, armor: 0, theme: 'sup', tag: 'tag-sup', tagLabel: '補給',
     core: '補給+2を獲得',
     option: '陣地構築：DEF+2',
     execute: (state) => {
@@ -320,7 +320,7 @@ const UNITS = [
     }
   },
   {
-    id: 'militia', name: '民兵', cost: 1, supplyCost: 1, maxHp: 20, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    id: 'militia', name: '民兵', cost: 1, supplyCost: 1, maxHp: 20, armor: 0, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
     core: '前衛1体に即時4ダメージ',
     option: '陣形：DEF+3',
     execute: (state, _i, _a, enemies) => {
@@ -343,7 +343,7 @@ const UNITS = [
     }
   },
   {
-    id: 'pike', name: 'パイク兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    id: 'pike', name: 'パイク兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 0, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
     faction: 'スイス',
     core: '前衛1体に即時9ダメージ',
     option: '陣形：DEF+5',
@@ -369,7 +369,7 @@ const UNITS = [
     }
   },
   {
-    id: 'halberd', name: 'ハルバード兵', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
+    id: 'halberd', name: 'ハルバード兵', cost: 1, supplyCost: 1, maxHp: 28, armor: 0, theme: 'atk', tag: 'tag-atk', tagLabel: '攻撃',
     faction: 'スイス',
     core: '前衛1体に即時9ダメージ',
     option: '陣形：DEF+5',
@@ -395,7 +395,7 @@ const UNITS = [
     }
   },
   {
-    id: 'longbow', name: 'ロングボウ', cost: 1, supplyCost: 1, maxHp: 28, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
+    id: 'longbow', name: 'ロングボウ', cost: 1, supplyCost: 1, maxHp: 28, armor: 0, theme: 'atk', tag: 'tag-atk', tagLabel: '斉射',
     faction: 'イングランド',
     core: '後衛全体に4ダメージ×2射（残弾制限：弓兵1体あたり5回/戦闘）',
     option: '略奪：ATK+1、補給+1',
