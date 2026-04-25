@@ -124,7 +124,7 @@ const UNITS = [
       if (target.hp <= 0) target.dead = true;
       const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
       state.lastInstant = actualDmg;
-      return { type: 'instant', msg: `槍騎士【精鋭突撃】：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}` };
+      return { type: 'instant', msg: `槍騎士【精鋭突撃】：${target.name}に即時${actualDmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
     },
     executeOption: (state) => {
       state.def = (state.def || 0) + 4;
@@ -161,7 +161,7 @@ const UNITS = [
       if (target.hp <= 0) target.dead = true;
       const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
       state.lastInstant = actualDmg;
-      return { type: 'instant', msg: `重装騎士［アーマー破砕］：${target.name}に即時${actualDmg}ダメージ＋アーマー破砕${deadMsg}` };
+      return { type: 'instant', msg: `重装騎士［アーマー破砕］：${target.name}に即時${actualDmg}ダメージ＋アーマー破砕${deadMsg}`, targetEnemy: target };
     }
   },
   {
@@ -198,7 +198,7 @@ const UNITS = [
         target.hp = Math.max(0, target.hp - dmg);
         if (target.hp <= 0) target.dead = true;
         const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
-        return { type: 'atk', msg: `弓兵【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
+        return { type: 'atk', msg: `弓兵【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}`, targetEnemy: target };
       }
       const targetPos = (unit && unit.archerTarget) || 'rear';
       const targetLabel = targetPos === 'front' ? '前衛' : '後衛';
@@ -265,7 +265,7 @@ const UNITS = [
         meleeTarget.hp = Math.max(0, meleeTarget.hp - dmg);
         if (meleeTarget.hp <= 0) meleeTarget.dead = true;
         const deadMsg = meleeTarget.dead ? '　→ 撃破！' : `　→ 残HP${meleeTarget.hp}`;
-        return { type: 'atk', msg: `弩兵【発射・近接】${meleeTarget.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
+        return { type: 'atk', msg: `弩兵【発射・近接】${meleeTarget.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}`, targetEnemy: meleeTarget };
       }
       const armyUnit = army[idx];
       const targetType = armyUnit.crossbowTarget || 'spear';
@@ -284,7 +284,7 @@ const UNITS = [
       state.crossbowAmmo = Math.max(0, (state.crossbowAmmo || 0) - 1);
       const deadMsg = victim.dead ? '　→ 撃破！' : `　→ 残HP${victim.hp}`;
       const fallbackMsg = targetEnemies.length === 0 ? `【${targetLabel}不在→前衛代替】` : '';
-      return { type: 'atk', msg: `弩兵【発射】${fallbackMsg}：${victim.name}に即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}　残弾${state.crossbowAmmo}` };
+      return { type: 'atk', msg: `弩兵【発射】${fallbackMsg}：${victim.name}に即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}　残弾${state.crossbowAmmo}`, targetEnemy: victim };
     },
     executeOption: (state, idx, army, enemies) => {
       const unit = army[idx];
@@ -303,7 +303,7 @@ const UNITS = [
       if (victim.hp <= 0) victim.dead = true;
       const deadMsg = victim.dead ? '　→ 撃破！' : `　→ 残HP${victim.hp}`;
       const fallbackMsg = targetEnemies.length === 0 ? `【${targetLabel}不在→前衛代替】` : '';
-      return { type: 'atk', msg: `弩兵［貫通］${fallbackMsg}：${victim.name}にシールド無視で即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}` };
+      return { type: 'atk', msg: `弩兵［貫通］${fallbackMsg}：${victim.name}にシールド無視で即時 ${dmg} ダメージ【アーマー貫通】${deadMsg}`, targetEnemy: victim };
     }
   },
   {
@@ -335,7 +335,7 @@ const UNITS = [
       if (target.hp <= 0) target.dead = true;
       const deadMsg = target.dead ? `　→ ${target.name}撃破！` : '';
       const armorMsg = armorVal > 0 ? `（装甲${armorVal}軽減→実${actualDmg}）` : '';
-      return { type: 'atk', msg: `民兵【攻撃】：${target.name}に${dmg}ダメージ${armorMsg}${deadMsg}` };
+      return { type: 'atk', msg: `民兵【攻撃】：${target.name}に${dmg}ダメージ${armorMsg}${deadMsg}`, targetEnemy: target };
     },
     executeOption: (state) => {
       state.def += 3;
@@ -409,7 +409,7 @@ const UNITS = [
         target.hp = Math.max(0, target.hp - dmg);
         if (target.hp <= 0) target.dead = true;
         const deadMsg = target.dead ? '　→ 撃破！' : `　→ 残HP${target.hp}`;
-        return { type: 'atk', msg: `ロングボウ【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}` };
+        return { type: 'atk', msg: `ロングボウ【近接】${target.name}に即時${dmg}ダメージ（残弾なし）${deadMsg}`, targetEnemy: target };
       }
       const targetPos = (unit && unit.archerTarget) || 'rear';
       const targetLabel = targetPos === 'front' ? '前衛' : '後衛';
@@ -454,12 +454,6 @@ const UNITS = [
     }
   },
 ];
-
-const COUNTER_CONFIG = {
-  spear: { triggerUnitId: 'cavalry', extraDmg: 6, atkDebuff: 0, label: '槍兵カウンター' },
-  archer: { triggerUnitId: 'spear', extraDmg: 4, atkDebuff: 0, label: '弓兵カウンター' },
-  cavalry: { triggerUnitId: 'heavy', extraDmg: 6, atkDebuff: 0, label: '騎馬兵カウンター' },
-};
 
 const MELEE_RETALIATION = {
   spear: { isMelee: true, dmgTaken: 2, dmgDealt: 2 },

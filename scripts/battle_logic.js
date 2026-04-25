@@ -71,8 +71,6 @@ function startBattle() {
     carryOver: null,
     scoutInfo: null,
     pendingMoraleDamage: 0,
-    archerCounterCount: 0,
-    archerMaxCount: enemies.filter(e => e.unitType === 'archer').length * 3,
     archerAmmo: army.filter(u => u.id === 'archer' || u.id === 'longbow').length * 5,
     crossbowAmmo: army.filter(u => u.id === 'crossbow').length * 5,
     prevLoopAtk: 0,
@@ -289,28 +287,13 @@ async function runTurn() {
         ? u.executeOption(battleState, i, army, enemies, u, loopCount)
         : u.execute(battleState, i, army, enemies, u, loopCount);
 
-      for (const enemy of enemies.filter(e => !e.dead && !e.fled)) {
-        const counter = COUNTER_CONFIG[enemy.unitType];
-        if (counter && u.id === counter.triggerUnitId && result.targetEnemy === enemy) {
-          if (enemy.unitType === 'archer') {
-            if (battleState.archerCounterCount >= battleState.archerMaxCount) {
-              addLog(`　🏹 ${enemy.name}【${counter.label}】矢切れ（${battleState.archerMaxCount}回上限に達した）`, 'sys');
-              continue;
-            }
-            battleState.archerCounterCount++;
-          }
-          const targetUnit = myUnitsHp.find(mu => mu.name === u.name && !mu.dead);
-          if (targetUnit) {
-            targetUnit.hp = Math.max(0, targetUnit.hp - counter.extraDmg);
-            if (targetUnit.hp <= 0) targetUnit.dead = true;
-          }
-          const countMsg = enemy.unitType === 'archer'
-            ? `（残り${battleState.archerMaxCount - battleState.archerCounterCount}回）`
-            : '';
-          addLog(`　⚡ ${enemy.name}【${counter.label}】割り込み！ ${u.name}に即時${counter.extraDmg}ダメージ${countMsg}`, 'atk');
-          renderMyUnits();
-        }
-      }
+      await triggerEnemyPassives('onAfterPlayerAction', {
+        state: battleState,
+        actorUnit: u,
+        actorHp: myUnitsHp[i],
+        actorIndex: i,
+        result,
+      });
 
       if (result.type === 'atk' || result.type === 'instant') {
         const meleeConf = MELEE_RETALIATION[u.id];
