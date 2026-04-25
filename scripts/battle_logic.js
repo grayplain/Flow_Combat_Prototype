@@ -295,23 +295,6 @@ async function runTurn() {
         result,
       });
 
-      if (result.type === 'atk' || result.type === 'instant') {
-        const meleeConf = MELEE_RETALIATION[u.id];
-        if (meleeConf && meleeConf.isMelee && meleeConf.dmgTaken > 0) {
-          const retaliator = enemies.find(e => !e.dead && !e.fled && ENEMY_MELEE_TYPES.has(e.unitType));
-          if (retaliator) {
-            const targetUnit = myUnitsHp.find(mu => mu.name === u.name && !mu.dead);
-            if (targetUnit) {
-              targetUnit.hp = Math.max(0, targetUnit.hp - meleeConf.dmgTaken);
-              if (targetUnit.hp <= 0) targetUnit.dead = true;
-              const deadMsg = targetUnit.dead ? '　→ 撃破！' : `　→ 残HP${targetUnit.hp}`;
-              addLog(`　⚔ ${retaliator.name}【近接反撃】${u.name}に${meleeConf.dmgTaken}ダメージ${deadMsg}`, 'atk');
-              renderMyUnits();
-            }
-          }
-        }
-      }
-
       if (pendingBonus > 0 && result.type === 'atk') {
         battleState.atk += pendingBonus;
         addLog(`　✨ 集中ボーナス +${pendingBonus} 適用`, 'amp');

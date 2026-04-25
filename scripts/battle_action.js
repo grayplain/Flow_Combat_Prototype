@@ -373,7 +373,6 @@ async function applyEnemyAttack() {
 
   for (const { enemy, atkVal, spearBonus } of attackers) {
     const atkCount = enemy.atkCount || 1;
-    let retaliationDone = false;
 
     for (let hit = 1; hit <= atkCount; hit++) {
       if (enemy.dead || enemy.fled) break;
@@ -411,23 +410,6 @@ async function applyEnemyAttack() {
         target.dead = true;
         renderMyUnits();
       }
-
-      if (!retaliationDone && ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
-        const retConf = MELEE_RETALIATION[target.id];
-        if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
-          const armorEnemy = enemy.armor || 0;
-          const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
-          if (retDmg > 0) {
-            enemy.hp = Math.max(0, enemy.hp - retDmg);
-            if (enemy.hp <= 0) enemy.dead = true;
-            const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
-            const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
-            addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
-            renderEnemies();
-          }
-          retaliationDone = true;
-        }
-      }
     }
   }
 
@@ -437,7 +419,6 @@ async function applyEnemyAttack() {
     if (!enemy || enemy.dead || enemy.fled) continue;
 
     const atkCount = intent.atkCount || 1;
-    let retaliationDone = false;
 
     for (let hit = 1; hit <= atkCount; hit++) {
       if (enemy.dead || enemy.fled) break;
@@ -472,23 +453,6 @@ async function applyEnemyAttack() {
       if (target.hp <= 0) {
         target.dead = true;
         renderMyUnits();
-      }
-
-      if (!retaliationDone && ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
-        const retConf = MELEE_RETALIATION[target.id];
-        if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
-          const armorEnemy = enemy.armor || 0;
-          const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
-          if (retDmg > 0) {
-            enemy.hp = Math.max(0, enemy.hp - retDmg);
-            if (enemy.hp <= 0) enemy.dead = true;
-            const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
-            const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
-            addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
-            renderEnemies();
-          }
-          retaliationDone = true;
-        }
       }
     }
   }
@@ -562,22 +526,6 @@ async function applyEnemyAttack() {
       renderMyUnits();
     }
 
-    // 近接反撃（敵が近接系ユニットの場合のみ）
-    if (ENEMY_MELEE_TYPES.has(enemy.unitType) && actualDmg > 0) {
-      const retConf = MELEE_RETALIATION[target.id];
-      if (retConf && retConf.isMelee && retConf.dmgDealt > 0 && !target.dead) {
-        const armorEnemy = enemy.armor || 0;
-        const retDmg = Math.max(0, retConf.dmgDealt - armorEnemy);
-        if (retDmg > 0) {
-          enemy.hp = Math.max(0, enemy.hp - retDmg);
-          if (enemy.hp <= 0) enemy.dead = true;
-          const retDeadMsg = enemy.dead ? '　→ 撃破！' : `　→ 残HP${enemy.hp}`;
-          const armorMsg = armorEnemy > 0 ? `（アーマー${armorEnemy}軽減）` : '';
-          addLog(`　↩ ${target.name}【近接反撃】${enemy.name}に${retDmg}ダメージ${armorMsg}${retDeadMsg}`, 'atk');
-          renderEnemies();
-        }
-      }
-    }
     renderMyUnits();
   }
 

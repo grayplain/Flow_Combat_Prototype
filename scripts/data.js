@@ -455,17 +455,6 @@ const UNITS = [
   },
 ];
 
-const MELEE_RETALIATION = {
-  spear: { isMelee: true, dmgTaken: 2, dmgDealt: 2 },
-  shield: { isMelee: true, dmgTaken: 2, dmgDealt: 2 },
-  heavy: { isMelee: true, dmgTaken: 2, dmgDealt: 4 },
-  cavalry: { isMelee: true, dmgTaken: 4, dmgDealt: 2 },
-  knight: { isMelee: true, dmgTaken: 0, dmgDealt: 4 },
-  militia: { isMelee: true, dmgTaken: 4, dmgDealt: 2 },
-};
-
-const ENEMY_MELEE_TYPES = new Set(['spear', 'cavalry']);
-
 // ===== 状態 =====
 let army = [];
 let condNodes = [];
