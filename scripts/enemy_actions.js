@@ -37,12 +37,17 @@ const ENEMY_ACTION_PATTERNS = {
   // 拠点3
   enemy3: {
     'e2': [
-    { action: 'volley', value: [4, 2, 'front'] }, 
+    { action: 'noop', value: [] },
+    { action: 'targeted_atk', value: [20, 'min_hp'] },
     ],
     'e3': [
     { action: 'noop', value: [] },
     { action: 'targeted_atk', value: [20, 'min_hp'] },
     ],
+    'e4': [
+    { action: 'noop', value: [] },
+    { action: 'targeted_atk', value: [20, 'min_hp'] },
+    ],    
     
   },  
   
