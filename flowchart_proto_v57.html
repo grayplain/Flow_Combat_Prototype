@@ -21,6 +21,10 @@
       <button class="btn btn-secondary" onclick="resetAll()">↺ リセット</button>
     </div>
 
+    <button class="flow-graph-toggle" id="btnFlowGraph" onclick="toggleFlowGraph()" type="button">
+      <span class="fg-icon">⬡</span> フロー構造を確認
+    </button>
+
     <div class="phase-indicator" id="phaseIndicator">
       <span class="phase-step active" id="ph-build">編成</span>
       <span class="phase-arrow">▶</span>
@@ -197,6 +201,19 @@
 <div class="cond-overlay" id="condOverlay" onclick="onCondOverlayBackdropClick(event)">
   <div class="cond-overlay-box" id="condOverlayBox"></div>
 </div>
+
+<aside class="flow-graph-panel" id="flowGraphPanel" aria-hidden="true">
+  <div class="flow-graph-header">
+    <span class="flow-graph-title">⬡ フロー構造</span>
+    <button type="button" class="flow-graph-close" onclick="toggleFlowGraph(false)" aria-label="閉じる">×</button>
+  </div>
+  <div class="flow-graph-legend">
+    <span><span class="lg-line lg-line-true"></span>TRUE</span>
+    <span><span class="lg-line lg-line-false"></span>FALSE</span>
+    <span><span class="lg-line lg-line-flow"></span>通常フロー</span>
+  </div>
+  <div class="flow-graph-content" id="flowGraphContent"></div>
+</aside>
 
 <div class="result-overlay" id="resultOverlay">
   <div class="result-box">
